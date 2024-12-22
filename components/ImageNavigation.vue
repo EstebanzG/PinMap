@@ -1,35 +1,56 @@
 <script setup lang="ts">
-import {onUnmounted, ref} from "vue";
+import {onUnmounted} from "vue";
 import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
+import ImageEdit from "./ImageEdit.vue";
+import PinActions from "~/components/PinActions.vue";
+
+const DEFAULT_PIN_SIZE = 40;
 
 defineProps<{
-  imageSrc: string
+  imageSrc: string;
   imageDimensions: {
-    width: number
-    height: number
-  }
-}>()
+    width: number;
+    height: number;
+  };
+}>();
 
 defineEmits<{
-  reset: []
-}>()
+  (e: "reset"): void;
+}>();
 
+const imageWrapper = useTemplateRef('image-wrapper');
+const imageEdit = useTemplateRef('edit-image');
+const pinAction = useTemplateRef<typeof PinActions>('pin-action');
 
-const imageWrapper = ref<HTMLDivElement | null>(null);
 let panzoomInstance: PanzoomObject | null = null;
+
+const defaultPanZoomOptions = {
+  maxZoom: 5,
+  minZoom: 0.5,
+};
+
+const handleActivateMovement = (isChecked: boolean) => {
+  if (panzoomInstance) {
+    panzoomInstance.setOptions({
+      disablePan: isChecked,
+      ...defaultPanZoomOptions,
+    });
+  }
+};
+
+const handlePrint = () => {
+  if (imageEdit.value) {
+    imageEdit.value.exportImage();
+  }
+};
 
 onMounted(() => {
   if (imageWrapper.value) {
-    panzoomInstance = panzoom(
-        imageWrapper.value, {
-          maxZoom: 5,
-          minZoom: 0.5,
-        }
-    );
+    panzoomInstance = panzoom(imageWrapper.value, defaultPanZoomOptions);
 
     const wheelHandler = (event: WheelEvent) => {
       event.preventDefault();
-      panzoomInstance?.zoomWithWheel(event, {step: 0.07});
+      panzoomInstance?.zoomWithWheel(event, {step: 0.1});
     };
     document.addEventListener("wheel", wheelHandler, {passive: false});
 
@@ -37,7 +58,7 @@ onMounted(() => {
       document.removeEventListener("wheel", wheelHandler);
     });
   }
-})
+});
 
 onUnmounted(() => {
   if (panzoomInstance) {
@@ -48,29 +69,32 @@ onUnmounted(() => {
 
 <template>
   <div class="image-preview-container">
-    <div class="image-wrapper" ref="imageWrapper">
+    <div class="image-wrapper" ref="image-wrapper">
       <ImageEdit
-        :imageSrc="imageSrc"
-        :imageDimensions="imageDimensions"
+          ref="edit-image"
+          :image-src="imageSrc"
+          :image-dimensions="imageDimensions"
+          :is-pin-settings-open="pinAction?.isOpen ?? null"
+          :pin-settings-name="pinAction?.name ?? null"
+          :pin-settings-color="pinAction?.color ?? null"
+          :pin-settings-size="pinAction?.size ?? DEFAULT_PIN_SIZE"
       />
     </div>
-    <button class="close-btn" @click="$emit('reset')">Reset</button>
+    <EditorActions
+        @handleActivateMovement="handleActivateMovement"
+        @reset="$emit('reset')"
+        @print="handlePrint"
+    />
+    <PinActions
+        ref="pin-action"
+        @handleActivateMovement="handleActivateMovement"
+        @reset="$emit('reset')"
+        @print="handlePrint"
+    />
   </div>
 </template>
 
 <style scoped>
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 10px 15px;
-  background-color: #f00;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
 .image-preview-container {
   width: 100%;
   height: 100%;

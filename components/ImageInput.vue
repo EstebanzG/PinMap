@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineEmits<{
-  handleFileInput: [event: Event]
+  (e: 'handleFileInput', event: Event): void;
 }>()
 
 const fileInput = ref<HTMLDivElement | null>(null);

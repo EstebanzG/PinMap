@@ -4,7 +4,6 @@ import {ref} from "vue";
 const imageSrc = ref<string | null>(null);
 const imageDimensions = ref({width: 0, height: 0});
 
-
 const handleFileInput = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
