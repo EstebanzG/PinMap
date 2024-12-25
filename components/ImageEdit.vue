@@ -2,38 +2,45 @@
 import {defineExpose, ref} from 'vue'
 import html2canvas from "html2canvas";
 
-const props = defineProps<{
-  imageSrc: string
-  imageDimensions: {
-    width: number
-    height: number
-  }
-  isPinSettingsOpen: boolean | null
-  pinSettingsName: string | null
-  pinSettingsColor: string | null
-  pinSettingsSize: number
-}>()
-
-const pins = ref<{
+interface Pin {
+  positionX: number,
+  positionY: number,
   x: number,
   y: number,
   color?: string | null,
   name?: string | null
   size: number
-}[]>([])
+}
+
+const props = defineProps<{
+  imageSrc: string,
+  imageDimensions: {
+    width: number
+    height: number
+  },
+  zoomScale: number,
+  isPinSettingsOpen: boolean | null,
+  pinSettingsName: string | null,
+  pinSettingsColor: string | null,
+  pinSettingsSize: number,
+}>()
+
+const pins = ref<Pin[]>([])
 
 const imageElement = useTemplateRef('image-element')
 
 const addPin = (event: MouseEvent) => {
-  const { offsetX, offsetY } = event;
+  const {offsetX, offsetY} = event;
 
-  const imageElementWidth = imageElement.value!.clientWidth;
-  const imageElementHeight = imageElement.value!.clientHeight;
+  const imageElementWidth = props.imageDimensions.width;
+  const imageElementHeight = props.imageDimensions.height;
 
   const xPercentage = ((offsetX - props.pinSettingsSize / 2) / imageElementWidth) * 100;
   const yPercentage = ((offsetY - props.pinSettingsSize) / imageElementHeight) * 100;
 
   pins.value.push({
+    positionX: offsetX,
+    positionY: offsetY,
     x: xPercentage,
     y: yPercentage,
     name: props.pinSettingsName,
@@ -42,9 +49,6 @@ const addPin = (event: MouseEvent) => {
   });
 };
 
-const rollback = () => {
-  pins.value.pop()
-}
 
 onMounted(() => {
   document.addEventListener('keydown', (event) => {
@@ -52,7 +56,11 @@ onMounted(() => {
     const ctrlKey = isOnMacos ? event.metaKey : event.ctrlKey
     if (event.key === 'z' && ctrlKey) {
       event.preventDefault();
-      rollback()
+      pins.value.pop()
+    }
+    if (event.key === 's' && ctrlKey) {
+      event.preventDefault();
+      exportImage()
     }
   })
 })
@@ -68,6 +76,18 @@ const exportImage = async () => {
   link.href = imageUrl;
   link.download = 'image-with-cubes.png';
   link.click();
+}
+
+const getPinPositionY = (pin: Pin) => {
+  const size = pin.size / props.zoomScale;
+
+  return ((pin.positionY - size) / props.imageDimensions.height) * 100;
+}
+
+const getPinPositionX = (pin: Pin) => {
+  const size = pin.size / props.zoomScale;
+
+  return ((pin.positionX - size / 2) / props.imageDimensions.width) * 100;
 }
 
 defineExpose({
@@ -90,17 +110,17 @@ defineExpose({
   >
     <Icon
         name="heroicons:map-pin-16-solid"
-        v-for="(cube, index) in pins"
+        v-for="(pin, index) in pins"
         :key="index"
         class="center-square"
         :style="{
-          top: `${cube.y}%`,
-          left: `${cube.x}%`,
-          backgroundColor: cube.color ?? 'black',
-          height: `${cube.size}px`,
-          width: `${cube.size}px`,
+          top: `${getPinPositionY(pin)}%`,
+          left: `${getPinPositionX(pin)}%`,
+          backgroundColor: pin.color ?? 'black',
+          height: `${pin.size / zoomScale}px`,
+          width: `${pin.size / zoomScale}px`,
         }"
-    ></Icon>
+    />
   </div>
 </template>
 

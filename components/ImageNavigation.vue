@@ -21,6 +21,7 @@ defineEmits<{
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
 const pinAction = useTemplateRef<typeof PinActions>('pin-action');
+const zoomScale = ref(1);
 
 let panzoomInstance: PanzoomObject | null = null;
 
@@ -50,7 +51,7 @@ onMounted(() => {
 
     const wheelHandler = (event: WheelEvent) => {
       event.preventDefault();
-      panzoomInstance?.zoomWithWheel(event, {step: 0.1});
+      zoomScale.value = panzoomInstance?.zoomWithWheel(event, {step: 0.1}).scale ?? 1;
     };
     document.addEventListener("wheel", wheelHandler, {passive: false});
 
@@ -74,6 +75,7 @@ onUnmounted(() => {
           ref="edit-image"
           :image-src="imageSrc"
           :image-dimensions="imageDimensions"
+          :zoom-scale="zoomScale"
           :is-pin-settings-open="pinAction?.isOpen ?? null"
           :pin-settings-name="pinAction?.name ?? null"
           :pin-settings-color="pinAction?.color ?? null"
