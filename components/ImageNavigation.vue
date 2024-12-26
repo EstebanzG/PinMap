@@ -26,7 +26,7 @@ const zoomScale = ref(1);
 let panzoomInstance: PanzoomObject | null = null;
 
 const defaultPanZoomOptions = {
-  maxZoom: 5,
+  maxZoom: 10,
   minZoom: 0.5,
 };
 
