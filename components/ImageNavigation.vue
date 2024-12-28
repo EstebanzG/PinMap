@@ -24,6 +24,7 @@ const imageEdit = useTemplateRef('edit-image');
 const menuPin = useTemplateRef<typeof MenuPin>('menu-pin');
 const zoomScale = ref(1);
 const menuOpen = ref<"pin" | "editor" | null>(null);
+const isNavigationDisabled = ref<boolean>(false);
 
 let panzoomInstance: PanzoomObject | null = null;
 
@@ -32,14 +33,17 @@ const defaultPanZoomOptions = {
   minZoom: 0.1,
 };
 
-const handleActivateMovement = (disabled: boolean) => {
+const handleActivateMovement = (value: boolean) => {
+  console.log('test')
   if (panzoomInstance) {
     panzoomInstance.setOptions({
-      disablePan: disabled,
+      disablePan: value,
       ...defaultPanZoomOptions,
     });
   }
 };
+
+watch(() => isNavigationDisabled.value, () => handleActivateMovement(isNavigationDisabled.value));
 
 const handlePrint = () => {
   if (imageEdit.value) {
@@ -53,7 +57,7 @@ const openMenuPin = () => {
 };
 
 const closeMenuPin = () => {
-  handleActivateMovement(false);
+  handleActivateMovement(isNavigationDisabled.value);
   menuOpen.value = null;
 };
 
@@ -123,7 +127,8 @@ onUnmounted(() => {
     </div>
     <MenuEditor
         v-if="menuOpen === 'editor'"
-        @handleActivateMovement="handleActivateMovement"
+        :is-navigation-disabled="isNavigationDisabled"
+        @handleActivateMovement="() => isNavigationDisabled = !isNavigationDisabled"
         @reset="$emit('reset')"
         @print="handlePrint"
         @close="() => menuOpen = null"

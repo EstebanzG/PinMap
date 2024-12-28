@@ -1,19 +1,14 @@
 <script setup lang="ts">
-defineProps<{}>()
+defineProps<{
+  isNavigationDisabled: boolean
+}>()
 
-const emits = defineEmits<{
-  (e: 'handleActivateMovement', isChecked: boolean): void;
+defineEmits<{
+  (e: 'handleActivateMovement'): void;
   (e: 'reset'): void;
   (e: 'print'): void;
   (e: 'close'): void;
 }>();
-
-const handleActivateMovement = (event: Event) => {
-  event.stopPropagation();
-  const isChecked = (event.target as HTMLInputElement).checked;
-  emits('handleActivateMovement', isChecked);
-};
-
 </script>
 
 <template>
@@ -29,7 +24,7 @@ const handleActivateMovement = (event: Event) => {
     </div>
     <div class="content">
       <span class="movement-control">
-        <input id="handle-movement" type="checkbox" @change="handleActivateMovement"/>
+        <input id="handle-movement" :checked="isNavigationDisabled" type="checkbox" @change="$emit('handleActivateMovement')"/>
         <label for="handle-movement" class="parkinsans-text">Disable movements</label>
       </span>
       <button class="action-btn" @click="$emit('print')">Print</button>
