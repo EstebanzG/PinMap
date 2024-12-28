@@ -18,6 +18,7 @@ export interface Pin extends Label {
 
 interface Cluster extends Label {
   numberOfPins: number,
+  names: string[],
 }
 
 const props = defineProps<{
@@ -194,8 +195,11 @@ const refreshView = () => {
         positionX: avgX,
         positionY: avgY,
         numberOfPins: cluster.length,
+        names: cluster.map(pin => pin.name),
         size: cluster.reduce((sum, pin) => sum + pin.size, 0) / cluster.length,
       });
+
+      console.log(clusterToDisplay)
     }
   }
 };
@@ -260,6 +264,8 @@ defineExpose({
         class="pin"
         :color=constantColor.RED
         :nb-of-pins="cluster.numberOfPins"
+        :names="cluster.names"
+        :zoom-scale="zoomScale"
         :style="{
           top: `${getPinPositionY(cluster)}%`,
           left: `${getPinPositionX(cluster)}%`,

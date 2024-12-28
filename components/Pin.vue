@@ -29,21 +29,4 @@ defineProps<{
 </template>
 
 <style scoped>
-.tooltip {
-  visibility: hidden;
-  background-color: white;
-  text-align: center;
-
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-
-  opacity: 0;
-}
-
-.svg-container:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
 </style>

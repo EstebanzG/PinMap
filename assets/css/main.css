@@ -75,3 +75,21 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+.tooltip {
+    visibility: hidden;
+    background-color: white;
+    text-align: left;
+
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    opacity: 0;
+}
+
+.svg-container:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
