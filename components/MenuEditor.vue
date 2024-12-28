@@ -41,22 +41,6 @@ defineEmits<{
   color: white;
 }
 
-.action-btn {
-  width: 100%;
-  height: 40px;
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.action-btn:hover {
-  background: white;
-  color: #111111;
-}
-
 input[type="checkbox"] {
   height: 20px;
   width: 20px;

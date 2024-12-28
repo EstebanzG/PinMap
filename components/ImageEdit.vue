@@ -11,7 +11,7 @@ interface Label {
   size: number
 }
 
-interface Pin extends Label {
+export interface Pin extends Label {
   color?: string | null,
   name?: string | null
 }
@@ -31,11 +31,13 @@ const props = defineProps<{
   pinSettingsName: string | null,
   pinSettingsColor: string | null,
   pinSettingsSize: number,
+  isUpdate: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'submitForm'): void,
-  (e: 'CloseMenuPin'): void
+  (e: 'CloseMenuPin'): void,
+  (e: 'updateOrDeletePin', pin: Pin): void,
 }>()
 
 const pins = ref<Pin[]>([])
@@ -46,6 +48,10 @@ const imageElement = useTemplateRef('image-element')
 
 const addPin = (event: MouseEvent) => {
   if (!props.isPinSettingsOpen) {
+    return;
+  }
+
+  if (props.isUpdate) {
     return;
   }
 
@@ -63,7 +69,7 @@ const addPin = (event: MouseEvent) => {
     size: props.pinSettingsSize,
   });
 
-  handleZoomScaleChange();
+  refreshView();
   emit('CloseMenuPin');
 };
 
@@ -75,7 +81,7 @@ onMounted(() => {
     if (event.key === 'z' && ctrlKey) {
       event.preventDefault();
       pins.value.pop();
-      handleZoomScaleChange();
+      refreshView();
       return;
     }
     if (event.key === 's' && ctrlKey) {
@@ -111,7 +117,7 @@ const getPinPositionX = (pin: Label) => {
   return ((pin.positionX - size / 2) / props.imageDimensions.width) * 100;
 }
 
-const handleZoomScaleChange = () => {
+const refreshView = () => {
   if (pins.value.length === 0) {
     pinsToDisplay.value = [];
     clusterToDisplay.value = [];
@@ -194,12 +200,31 @@ const handleZoomScaleChange = () => {
   }
 };
 
-watch(() => props.zoomScale, handleZoomScaleChange);
+watch(() => props.zoomScale, refreshView);
+
+const deletePin = (pin: Pin) => {
+  pins.value = pins.value.filter(p => p.id !== pin.id);
+  refreshView();
+  emit('CloseMenuPin');
+}
+
+const updatePin = (pin: Pin) => {
+  pin.color = props.pinSettingsColor;
+  pin.name = props.pinSettingsName;
+  pin.size = props.pinSettingsSize;
+  pins.value = pins.value.filter(p => p.id !== pin.id);
+  pins.value.push(pin);
+  refreshView();
+  emit('CloseMenuPin');
+}
 
 
 defineExpose({
   exportImage,
   addPin,
+  deletePin,
+  updatePin,
+  handleZoomScaleChange: refreshView
 })
 </script>
 
@@ -216,6 +241,7 @@ defineExpose({
   >
     <Pin
         v-for="(pin, index) in pinsToDisplay"
+        @click="() => $emit('updateOrDeletePin', pin)"
         :key="index"
         :color="pin.color ?? 'black'"
         :tooltipText="pin.name ?? ''"

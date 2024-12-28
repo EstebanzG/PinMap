@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { defineExpose } from "vue";
 import constantColor from "~/utils/constant-color";
+import type {Pin} from "~/components/ImageEdit.vue";
 
-defineProps<{}>()
+const props = defineProps<{
+  pin ?: Pin
+}>()
 
 defineEmits<{
   (e: 'close'): void;
+  (e: 'delete', pin: Pin): void;
+  (e: 'update', pin: Pin): void;
 }>();
 
-const name = ref<string | null>(null);
-const color = ref<string>(constantColor.RED);
-const size = ref<number>(40);
+const name = ref<string | null>(props.pin ? props.pin.name : null);
+const color = ref<string>(props.pin ? props.pin.color : constantColor.RED);
+const size = ref<number>(props.pin ? props.pin.size : 40);
 const form = useTemplateRef('form');
 
 defineExpose({
@@ -28,7 +33,7 @@ defineExpose({
           name="heroicons:x-mark-20-solid"
           :style="{
             height: '30px',
-            width: '30px',
+            width: '30px'
           }"
       />
     </div>
@@ -45,6 +50,8 @@ defineExpose({
         <label for="color" class="parkinsans-text">Color</label>
         <input id="color" type="color" name="color" v-model="color"/>
       </div>
+      <button v-if="pin !== null" class="action-btn" type="button" @click="$emit('delete', pin)">Delete</button>
+      <button v-if="pin !== null" class="action-btn" type="button" @click="$emit('update', pin)">Save</button>
     </form>
   </div>
 </template>

@@ -39,8 +39,9 @@ input {
   display: none;
 }
 
-h1 {
+h1, h2 {
   cursor: pointer;
+  text-align: center;
 }
 
 h2 {

@@ -4,6 +4,7 @@ import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
 import ImageEdit from "./ImageEdit.vue";
 import type MenuPin from "~/components/MenuPin.vue";
 import MenuEditor from "~/components/MenuEditor.vue";
+import type {Pin} from "~/components/ImageEdit.vue";
 
 const DEFAULT_PIN_SIZE = 40;
 
@@ -25,6 +26,7 @@ const menuPin = useTemplateRef<typeof MenuPin>('menu-pin');
 const zoomScale = ref(1);
 const menuOpen = ref<"pin" | "editor" | null>(null);
 const isNavigationDisabled = ref<boolean>(false);
+const pinToUpdate = ref<Pin | null>(null);
 
 let panzoomInstance: PanzoomObject | null = null;
 
@@ -34,7 +36,6 @@ const defaultPanZoomOptions = {
 };
 
 const handleActivateMovement = (value: boolean) => {
-  console.log('test')
   if (panzoomInstance) {
     panzoomInstance.setOptions({
       disablePan: value,
@@ -57,8 +58,9 @@ const openMenuPin = () => {
 };
 
 const closeMenuPin = () => {
-  handleActivateMovement(isNavigationDisabled.value);
+  pinToUpdate.value = null;
   menuOpen.value = null;
+  handleActivateMovement(isNavigationDisabled.value);
 };
 
 const submitForm = () => {
@@ -77,6 +79,18 @@ const submitForm = () => {
   }
 };
 
+const updateOrDeletePin = (pin: Pin) => {
+  pinToUpdate.value = pin;
+  menuOpen.value = "pin"
+}
+
+const deletePin = (pin: Pin) => {
+  imageEdit.value.deletePin(pin);
+}
+
+const updatePin = (pin: Pin) => {
+  imageEdit.value.updatePin(pin);
+}
 
 onMounted(() => {
   if (imageWrapper.value) {
@@ -113,8 +127,10 @@ onUnmounted(() => {
           :pin-settings-name="menuPin?.name ?? null"
           :pin-settings-color="menuPin?.color ?? null"
           :pin-settings-size="menuPin?.size ?? DEFAULT_PIN_SIZE"
+          :is-update="pinToUpdate !== null"
           @submit-form="submitForm"
           @close-menu-pin="closeMenuPin"
+          @update-or-delete-pin="updateOrDeletePin"
       />
     </div>
     <div class="actions" v-if="menuOpen === null">
@@ -136,7 +152,10 @@ onUnmounted(() => {
     <MenuPin
         v-if="menuOpen === 'pin'"
         ref="menu-pin"
+        :pin="pinToUpdate"
         @close="closeMenuPin"
+        @delete="(pin: Pin) => deletePin(pin)"
+        @update="(pin: Pin) => updatePin(pin)"
     />
   </div>
 </template>
