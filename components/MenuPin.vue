@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineExpose } from "vue";
+import constantColor from "~/utils/constant-color";
 
 defineProps<{}>()
 
@@ -7,16 +8,16 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const isOpen = ref<boolean>(false);
 const name = ref<string | null>(null);
-const color = ref<string>('red');
+const color = ref<string>(constantColor.RED);
 const size = ref<number>(40);
+const form = useTemplateRef('form');
 
 defineExpose({
-  isOpen,
   name,
   color,
   size,
+  form
 })
 </script>
 
@@ -31,7 +32,7 @@ defineExpose({
           }"
       />
     </div>
-    <form class="content">
+    <form class="content" ref="form">
       <div class="form-group">
         <label for="name" class="parkinsans-text">Label name*</label>
         <input id="name" type="text" name="label name" v-model="name" placeholder="Chicago" required/>

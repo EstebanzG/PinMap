@@ -21,7 +21,7 @@ defineEmits<{
 
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
-const pinAction = useTemplateRef<typeof MenuPin>('pin-action');
+const menuPin = useTemplateRef<typeof MenuPin>('menu-pin');
 const zoomScale = ref(1);
 const menuOpen = ref<"pin" | "editor" | null>(null);
 
@@ -46,6 +46,23 @@ const handlePrint = () => {
     imageEdit.value.exportImage();
   }
 };
+
+const submitForm = () => {
+  if (menuPin.value) {
+    const form = menuPin.value.form;
+    if (form) {
+      if (!form.checkValidity()) {
+        for (const element of form.elements) {
+          if (!element.validity.valid) {
+            element.reportValidity();
+          }
+        }
+        return false;
+      }
+    }
+  }
+};
+
 
 onMounted(() => {
   if (imageWrapper.value) {
@@ -79,9 +96,10 @@ onUnmounted(() => {
           :image-dimensions="imageDimensions"
           :zoom-scale="zoomScale"
           :is-pin-settings-open="menuOpen === 'pin'"
-          :pin-settings-name="pinAction?.name ?? null"
-          :pin-settings-color="pinAction?.color ?? null"
-          :pin-settings-size="pinAction?.size ?? DEFAULT_PIN_SIZE"
+          :pin-settings-name="menuPin?.name ?? null"
+          :pin-settings-color="menuPin?.color ?? null"
+          :pin-settings-size="menuPin?.size ?? DEFAULT_PIN_SIZE"
+          @submit-form="submitForm"
       />
     </div>
     <div class="actions" v-if="menuOpen === null">
@@ -101,7 +119,7 @@ onUnmounted(() => {
     />
     <MenuPin
         v-if="menuOpen === 'pin'"
-        ref="pin-action"
+        ref="menu-pin"
         @close="() => menuOpen = null"
     />
   </div>

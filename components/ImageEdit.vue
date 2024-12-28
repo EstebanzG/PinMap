@@ -2,6 +2,7 @@
 import {defineExpose, ref} from 'vue'
 import html2canvas from "html2canvas";
 import {v4 as uuidv4} from 'uuid';
+import constantColor from "~/utils/constant-color";
 
 interface Label {
   id: string,
@@ -32,6 +33,10 @@ const props = defineProps<{
   pinSettingsSize: number,
 }>()
 
+const emit = defineEmits<{
+  (e: 'submitForm'): boolean,
+}>()
+
 const pins = ref<Pin[]>([])
 const pinsToDisplay = ref<Pin[]>([])
 const clusterToDisplay = ref<Cluster[]>([])
@@ -39,6 +44,11 @@ const clusterToDisplay = ref<Cluster[]>([])
 const imageElement = useTemplateRef('image-element')
 
 const addPin = (event: MouseEvent) => {
+  if (props.pinSettingsName === null || props.pinSettingsName === "") {
+    emit('submitForm');
+    return;
+  }
+
   pins.value.push({
     id: uuidv4(),
     positionX: event.offsetX,
@@ -102,7 +112,6 @@ const handleZoomScaleChange = () => {
     return;
   }
 
-  // Helper function to check if two pins overlap
   const pinsOverlap = (pin1: Pin, pin2: Pin) => {
     const distance = Math.sqrt(
         Math.pow(pin2.positionX - pin1.positionX, 2) +
@@ -112,26 +121,20 @@ const handleZoomScaleChange = () => {
     return distance < combinedRadius;
   };
 
-  // Create clusters of overlapping pins
   const clusters: Pin[][] = [];
   const processed = new Set<string>();
 
-  // Function to find or create a cluster for a pin
   const findOrCreateCluster = (pin: Pin): Pin[] => {
-    // Check existing clusters
     for (const cluster of clusters) {
-      // If pin overlaps with any pin in cluster, return that cluster
       if (cluster.some(clusterPin => pinsOverlap(pin, clusterPin))) {
         return cluster;
       }
     }
-    // No overlapping cluster found, create new one
     const newCluster: Pin[] = [];
     clusters.push(newCluster);
     return newCluster;
   };
 
-  // Process each pin
   for (const pin of pins.value) {
     if (processed.has(pin.id)) {
       continue;
@@ -141,7 +144,6 @@ const handleZoomScaleChange = () => {
     currentCluster.push(pin);
     processed.add(pin.id);
 
-    // Keep checking for more pins that might overlap with the growing cluster
     let changed = true;
     while (changed) {
       changed = false;
@@ -150,7 +152,6 @@ const handleZoomScaleChange = () => {
           continue;
         }
 
-        // If pin overlaps with any pin in current cluster
         if (currentCluster.some(clusterPin => pinsOverlap(otherPin, clusterPin))) {
           currentCluster.push(otherPin);
           processed.add(otherPin.id);
@@ -163,7 +164,6 @@ const handleZoomScaleChange = () => {
   pinsToDisplay.value = [];
   clusterToDisplay.value = [];
 
-  // Add individual pins that aren't in any cluster
   for (const pin of pins.value) {
     if (!processed.has(pin.id)) {
       pinsToDisplay.value.push(pin);
@@ -226,7 +226,7 @@ defineExpose({
         v-for="(cluster, index) in clusterToDisplay"
         :key="index"
         class="center-square"
-        color="red"
+        :color=constantColor.RED
         :nb-of-pins="cluster.numberOfPins"
         :style="{
           top: `${getPinPositionY(cluster)}%`,
