@@ -3,13 +3,20 @@ import {defineExpose, ref} from 'vue'
 import html2canvas from "html2canvas";
 import {v4 as uuidv4} from 'uuid';
 
-interface Pin {
+interface Label {
   id: string,
   positionX: number,
   positionY: number,
+  size: number
+}
+
+interface Pin extends Label {
   color?: string | null,
   name?: string | null
-  size: number
+}
+
+interface Cluster extends Label {
+  numberOfPins: number,
 }
 
 const props = defineProps<{
@@ -27,6 +34,7 @@ const props = defineProps<{
 
 const pins = ref<Pin[]>([])
 const pinsToDisplay = ref<Pin[]>([])
+const clusterToDisplay = ref<Cluster[]>([])
 
 const imageElement = useTemplateRef('image-element')
 
@@ -50,11 +58,14 @@ onMounted(() => {
     const ctrlKey = isOnMacos ? event.metaKey : event.ctrlKey
     if (event.key === 'z' && ctrlKey) {
       event.preventDefault();
-      pins.value.pop()
+      pins.value.pop();
+      handleZoomScaleChange();
+      return;
     }
     if (event.key === 's' && ctrlKey) {
       event.preventDefault();
       exportImage()
+      return;
     }
   })
 })
@@ -72,13 +83,13 @@ const exportImage = async () => {
   link.click();
 }
 
-const getPinPositionY = (pin: Pin) => {
+const getPinPositionY = (pin: Label) => {
   const size = pin.size / props.zoomScale;
 
   return ((pin.positionY - size) / props.imageDimensions.height) * 100;
 }
 
-const getPinPositionX = (pin: Pin) => {
+const getPinPositionX = (pin: Label) => {
   const size = pin.size / props.zoomScale;
 
   return ((pin.positionX - size / 2) / props.imageDimensions.width) * 100;
@@ -86,6 +97,8 @@ const getPinPositionX = (pin: Pin) => {
 
 const handleZoomScaleChange = () => {
   if (pins.value.length === 0) {
+    pinsToDisplay.value = [];
+    clusterToDisplay.value = [];
     return;
   }
 
@@ -147,38 +160,32 @@ const handleZoomScaleChange = () => {
     }
   }
 
-  // Convert clusters into merged pins
-  const mergedPins: Pin[] = [];
+  pinsToDisplay.value = [];
+  clusterToDisplay.value = [];
 
   // Add individual pins that aren't in any cluster
   for (const pin of pins.value) {
     if (!processed.has(pin.id)) {
-      mergedPins.push(pin);
+      pinsToDisplay.value.push(pin);
     }
   }
 
-  // Add merged cluster pins
   for (const cluster of clusters) {
     if (cluster.length === 1) {
-      mergedPins.push(cluster[0]);
+      pinsToDisplay.value.push(cluster[0]);
     } else {
-      // Calculate average position for cluster
       const avgX = cluster.reduce((sum, pin) => sum + pin.positionX, 0) / cluster.length;
       const avgY = cluster.reduce((sum, pin) => sum + pin.positionY, 0) / cluster.length;
 
-      // Create merged pin with size based on cluster size
-      mergedPins.push({
+      clusterToDisplay.value.push({
         id: uuidv4(),
         positionX: avgX,
         positionY: avgY,
-        size: 40 + (cluster.length - 2) * 10, // Increase size based on number of merged pins
-        color: '#44a832',
-        name: `Group of ${cluster.length} pins`
+        numberOfPins: cluster.length,
+        size: cluster.reduce((sum, pin) => sum + pin.size, 0) / cluster.length,
       });
     }
   }
-
-  pinsToDisplay.value = mergedPins;
 };
 
 watch(() => props.zoomScale, handleZoomScaleChange);
@@ -202,18 +209,32 @@ defineExpose({
           }"
       @click.self="(event) => isPinSettingsOpen ? addPin(event) : null"
   >
-    <Icon
+    <Pin
         name="heroicons:map-pin-16-solid"
         v-for="(pin, index) in pinsToDisplay"
         :key="index"
+        :color="pin.color ?? 'black'"
         class="center-square"
         :style="{
           top: `${getPinPositionY(pin)}%`,
           left: `${getPinPositionX(pin)}%`,
-          backgroundColor: pin.color ?? 'black',
           height: `${pin.size / zoomScale}px`,
           width: `${pin.size / zoomScale}px`,
-          border: '1px solid black',
+          pointerEvents: 'none'
+        }"
+    />
+    <Cluster
+        name="heroicons:map-pin-16-solid"
+        v-for="(cluster, index) in clusterToDisplay"
+        :key="index"
+        class="center-square"
+        color="blue"
+        :nb-of-pins="cluster.numberOfPins"
+        :style="{
+          top: `${getPinPositionY(cluster)}%`,
+          left: `${getPinPositionX(cluster)}%`,
+          height: `${cluster.size / zoomScale}px`,
+          width: `${cluster.size / zoomScale}px`,
           pointerEvents: 'none'
         }"
     />
