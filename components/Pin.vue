@@ -29,13 +29,6 @@ defineProps<{
 </template>
 
 <style scoped>
-.svg-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .tooltip {
   visibility: hidden;
   background-color: white;

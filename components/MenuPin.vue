@@ -44,7 +44,7 @@ defineExpose({
       </div>
       <span class="form-group">
         <label for="size" class="parkinsans-text">Size</label>
-        <input id="size" type="number" name="color" v-model="size"/>
+        <input id="size" type="number" min="20" max="80" name="color" v-model="size"/>
       </span>
       <div class="form-group">
         <label for="color" class="parkinsans-text">Color</label>

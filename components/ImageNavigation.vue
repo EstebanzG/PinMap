@@ -80,6 +80,9 @@ const submitForm = () => {
 };
 
 const updateOrDeletePin = (pin: Pin) => {
+  if (pinToUpdate.value) {
+    return;
+  }
   pinToUpdate.value = pin;
   menuOpen.value = "pin"
 }

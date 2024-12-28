@@ -101,7 +101,7 @@ const exportImage = async () => {
 
   const link = document.createElement('a');
   link.href = imageUrl;
-  link.download = 'image-with-cubes.png';
+  link.download = 'map.png';
   link.click();
 }
 

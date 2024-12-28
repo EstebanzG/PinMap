@@ -68,3 +68,10 @@ body {
     background: white;
     color: #111111;
 }
+
+.svg-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
