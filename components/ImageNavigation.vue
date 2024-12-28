@@ -28,14 +28,14 @@ const menuOpen = ref<"pin" | "editor" | null>(null);
 let panzoomInstance: PanzoomObject | null = null;
 
 const defaultPanZoomOptions = {
-  maxZoom: 10,
-  minZoom: 0.5,
+  maxZoom: 15,
+  minZoom: 0.1,
 };
 
-const handleActivateMovement = (isChecked: boolean) => {
+const handleActivateMovement = (disabled: boolean) => {
   if (panzoomInstance) {
     panzoomInstance.setOptions({
-      disablePan: isChecked,
+      disablePan: disabled,
       ...defaultPanZoomOptions,
     });
   }
@@ -45,6 +45,16 @@ const handlePrint = () => {
   if (imageEdit.value) {
     imageEdit.value.exportImage();
   }
+};
+
+const openMenuPin = () => {
+  handleActivateMovement(true);
+  menuOpen.value = "pin";
+};
+
+const closeMenuPin = () => {
+  handleActivateMovement(false);
+  menuOpen.value = null;
 };
 
 const submitForm = () => {
@@ -100,10 +110,11 @@ onUnmounted(() => {
           :pin-settings-color="menuPin?.color ?? null"
           :pin-settings-size="menuPin?.size ?? DEFAULT_PIN_SIZE"
           @submit-form="submitForm"
+          @close-menu-pin="closeMenuPin"
       />
     </div>
     <div class="actions" v-if="menuOpen === null">
-      <div class="closed cursor-pointer" @click="() => menuOpen = 'pin'">
+      <div class="closed cursor-pointer" @click="openMenuPin">
         <Icon name="heroicons:plus-circle"/>
       </div>
       <div class="closed cursor-pointer" @click="() => menuOpen = 'editor'">
@@ -120,7 +131,7 @@ onUnmounted(() => {
     <MenuPin
         v-if="menuOpen === 'pin'"
         ref="menu-pin"
-        @close="() => menuOpen = null"
+        @close="closeMenuPin"
     />
   </div>
 </template>

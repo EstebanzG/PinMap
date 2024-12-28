@@ -34,7 +34,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'submitForm'): boolean,
+  (e: 'submitForm'): void,
+  (e: 'CloseMenuPin'): void
 }>()
 
 const pins = ref<Pin[]>([])
@@ -44,6 +45,10 @@ const clusterToDisplay = ref<Cluster[]>([])
 const imageElement = useTemplateRef('image-element')
 
 const addPin = (event: MouseEvent) => {
+  if (!props.isPinSettingsOpen) {
+    return;
+  }
+
   if (props.pinSettingsName === null || props.pinSettingsName === "") {
     emit('submitForm');
     return;
@@ -59,6 +64,7 @@ const addPin = (event: MouseEvent) => {
   });
 
   handleZoomScaleChange();
+  emit('CloseMenuPin');
 };
 
 
@@ -203,11 +209,11 @@ defineExpose({
       class="image-background"
       ref="image-element"
       :style="{
-            backgroundImage: imageSrc ? `url('${imageSrc}')` : 'none',
+            backgroundImage: `url('${imageSrc}')`,
             width: `${imageDimensions.width}px`,
             height: `${imageDimensions.height}px`,
           }"
-      @click.self="(event) => isPinSettingsOpen ? addPin(event) : null"
+      @click.self="(event) =>addPin(event)"
   >
     <Pin
         v-for="(pin, index) in pinsToDisplay"
