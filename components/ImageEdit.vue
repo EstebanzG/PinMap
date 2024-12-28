@@ -201,7 +201,6 @@ defineExpose({
   exportImage,
   addPin,
 })
-
 </script>
 
 <template>
@@ -219,19 +218,20 @@ defineExpose({
         v-for="(pin, index) in pinsToDisplay"
         :key="index"
         :color="pin.color ?? 'black'"
-        class="center-square"
+        :tooltipText="pin.name ?? ''"
+        :zoom-scale="zoomScale"
+        class="pin"
         :style="{
           top: `${getPinPositionY(pin)}%`,
           left: `${getPinPositionX(pin)}%`,
           height: `${pin.size / zoomScale}px`,
           width: `${pin.size / zoomScale}px`,
-          pointerEvents: 'none'
         }"
     />
     <Cluster
         v-for="(cluster, index) in clusterToDisplay"
         :key="index"
-        class="center-square"
+        class="pin"
         :color=constantColor.RED
         :nb-of-pins="cluster.numberOfPins"
         :style="{
@@ -239,7 +239,6 @@ defineExpose({
           left: `${getPinPositionX(cluster)}%`,
           height: `${cluster.size / zoomScale}px`,
           width: `${cluster.size / zoomScale}px`,
-          pointerEvents: 'none'
         }"
     />
   </div>
@@ -253,7 +252,7 @@ defineExpose({
   position: relative;
 }
 
-.center-square {
+.pin {
   position: absolute;
 }
 </style>
