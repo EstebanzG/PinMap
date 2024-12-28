@@ -5,6 +5,13 @@
     font-style: normal;
 }
 
+.parkinsans-title-secondary {
+    font-family: "Parkinsans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+}
+
 .parkinsans-text {
     font-family: "Parkinsans", sans-serif;
     font-optical-sizing: auto;

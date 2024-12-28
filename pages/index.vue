@@ -18,6 +18,16 @@ const handleFileInput = async (event: Event) => {
   }
 };
 
+const useDefaultMap = () => {
+  imageSrc.value = '/default-map.svg';
+
+  const img = new Image();
+  img.src = '/default-map.png';
+  img.onload = () => {
+    imageDimensions.value = {width: img.naturalWidth, height: img.naturalHeight};
+  };
+};
+
 const reset = () => {
   imageSrc.value = null;
   imageDimensions.value = {width: 0, height: 0};
@@ -26,7 +36,11 @@ const reset = () => {
 
 <template>
   <div class="container">
-    <ImageInput v-if="!imageSrc" @handleFileInput="handleFileInput"/>
+    <ImageInput
+        v-if="!imageSrc"
+        @handle-file-input="handleFileInput"
+        @use-default-map="useDefaultMap"
+    />
     <ImageNavigation
         v-else
         :imageSrc="imageSrc"
