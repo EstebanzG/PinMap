@@ -29,6 +29,13 @@ defineEmits<{
       </span>
       <button class="action-btn" @click="$emit('print')">Print</button>
       <button class="action-btn" @click="$emit('reset')">Reset</button>
+      <div class="parkinsans-text shortcuts">
+        <h3>Shortcuts</h3>
+        <ul>
+          <li>CTRL + Z to remove the last pin</li>
+          <li>CTRL + S to export the map</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -45,5 +52,17 @@ input[type="checkbox"] {
   height: 20px;
   width: 20px;
   cursor: pointer;
+}
+
+h3 {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+}
+
+.shortcuts {
+  color: white;
 }
 </style>
