@@ -56,8 +56,7 @@ const addPin = (event: MouseEvent) => {
     return;
   }
 
-  if (props.pinSettingsName === null || props.pinSettingsName === "") {
-    emit('submitForm');
+  if (!checkValidity()) {
     return;
   }
 
@@ -195,7 +194,7 @@ const refreshView = () => {
         positionX: avgX,
         positionY: avgY,
         numberOfPins: cluster.length,
-        names: cluster.map(pin => pin.name),
+        names: (cluster.map(pin => pin.name ?? "")),
         size: cluster.reduce((sum, pin) => sum + pin.size, 0) / cluster.length,
       });
 
@@ -213,6 +212,9 @@ const deletePin = (pin: Pin) => {
 }
 
 const updatePin = (pin: Pin) => {
+  if (!checkValidity()) {
+    return;
+  }
   pin.color = props.pinSettingsColor;
   pin.name = props.pinSettingsName;
   pin.size = props.pinSettingsSize;
@@ -220,6 +222,17 @@ const updatePin = (pin: Pin) => {
   pins.value.push(pin);
   refreshView();
   emit('CloseMenuPin');
+}
+
+const checkValidity = (): boolean => {
+  const isNameInvalid = props.pinSettingsName === null || props.pinSettingsName === "";
+  const isSizeInvalid = props.pinSettingsSize < 20 || props.pinSettingsSize > 80;
+  if (isNameInvalid || isSizeInvalid) {
+    emit('submitForm');
+    return false;
+  }
+
+  return true;
 }
 
 

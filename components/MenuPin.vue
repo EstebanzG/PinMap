@@ -4,19 +4,31 @@ import constantColor from "~/utils/constant-color";
 import type {Pin} from "~/components/ImageEdit.vue";
 
 const props = defineProps<{
-  pin ?: Pin
+  pin ?: Pin | null;
 }>()
 
-defineEmits<{
+const emits = defineEmits<{
   (e: 'close'): void;
   (e: 'delete', pin: Pin): void;
   (e: 'update', pin: Pin): void;
 }>();
 
-const name = ref<string | null>(props.pin ? props.pin.name : null);
-const color = ref<string>(props.pin ? props.pin.color : constantColor.RED);
+const name = ref<string | null>(props.pin?.name ?? null);
+const color = ref<string>(props.pin?.color ?? constantColor.RED);
 const size = ref<number>(props.pin ? props.pin.size : 40);
 const form = useTemplateRef('form');
+
+const deleteEvent = (pin?: Pin | null) => {
+  if (pin !== null && pin !== undefined) {
+    emits('delete', pin)
+  }
+}
+
+const updateEvent = (pin?: Pin | null) => {
+  if (pin !== null && pin !== undefined) {
+    emits('update', pin)
+  }
+}
 
 defineExpose({
   name,
@@ -50,8 +62,8 @@ defineExpose({
         <label for="color" class="parkinsans-text">Color</label>
         <input id="color" type="color" name="color" v-model="color"/>
       </div>
-      <button v-if="pin !== null" class="action-btn" type="button" @click="$emit('delete', pin)">Delete</button>
-      <button v-if="pin !== null" class="action-btn" type="button" @click="$emit('update', pin)">Save</button>
+      <button v-if="pin !== null" class="action-btn" type="button" @click="() => updateEvent(pin)">Save</button>
+      <button v-if="pin !== null" class="action-btn" type="button" @click="() => deleteEvent(pin)">Delete</button>
     </form>
   </div>
 </template>

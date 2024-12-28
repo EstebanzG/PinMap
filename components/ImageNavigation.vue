@@ -88,11 +88,11 @@ const updateOrDeletePin = (pin: Pin) => {
 }
 
 const deletePin = (pin: Pin) => {
-  imageEdit.value.deletePin(pin);
+  imageEdit.value?.deletePin(pin);
 }
 
 const updatePin = (pin: Pin) => {
-  imageEdit.value.updatePin(pin);
+  imageEdit.value?.updatePin(pin);
 }
 
 onMounted(() => {
