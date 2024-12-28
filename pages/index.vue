@@ -22,7 +22,7 @@ const useDefaultMap = () => {
   imageSrc.value = '/default-map.svg';
 
   const img = new Image();
-  img.src = '/default-map.png';
+  img.src = '/default-map.svg';
   img.onload = () => {
     imageDimensions.value = {width: img.naturalWidth, height: img.naturalHeight};
   };
