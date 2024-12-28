@@ -39,8 +39,8 @@ defineExpose({
     </div>
     <form class="content" ref="form">
       <div class="form-group">
-        <label for="name" class="parkinsans-text">Label name*</label>
-        <input id="name" type="text" name="label name" v-model="name" placeholder="Chicago" autocomplete="off" required/>
+        <label for="name" class="parkinsans-text">Pin name*</label>
+        <input id="name" type="text" name="pin name" v-model="name" placeholder="Chicago" autocomplete="off" required/>
       </div>
       <span class="form-group">
         <label for="size" class="parkinsans-text">Size</label>
