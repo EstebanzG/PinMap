@@ -210,7 +210,6 @@ defineExpose({
       @click.self="(event) => isPinSettingsOpen ? addPin(event) : null"
   >
     <Pin
-        name="heroicons:map-pin-16-solid"
         v-for="(pin, index) in pinsToDisplay"
         :key="index"
         :color="pin.color ?? 'black'"
@@ -224,11 +223,10 @@ defineExpose({
         }"
     />
     <Cluster
-        name="heroicons:map-pin-16-solid"
         v-for="(cluster, index) in clusterToDisplay"
         :key="index"
         class="center-square"
-        color="blue"
+        color="red"
         :nb-of-pins="cluster.numberOfPins"
         :style="{
           top: `${getPinPositionY(cluster)}%`,

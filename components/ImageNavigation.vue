@@ -2,7 +2,8 @@
 import {onUnmounted} from "vue";
 import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
 import ImageEdit from "./ImageEdit.vue";
-import PinActions from "~/components/PinActions.vue";
+import type MenuPin from "~/components/MenuPin.vue";
+import MenuEditor from "~/components/MenuEditor.vue";
 
 const DEFAULT_PIN_SIZE = 40;
 
@@ -20,8 +21,9 @@ defineEmits<{
 
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
-const pinAction = useTemplateRef<typeof PinActions>('pin-action');
+const pinAction = useTemplateRef<typeof MenuPin>('pin-action');
 const zoomScale = ref(1);
+const menuOpen = ref<"pin" | "editor" | null>(null);
 
 let panzoomInstance: PanzoomObject | null = null;
 
@@ -76,22 +78,31 @@ onUnmounted(() => {
           :image-src="imageSrc"
           :image-dimensions="imageDimensions"
           :zoom-scale="zoomScale"
-          :is-pin-settings-open="pinAction?.isOpen ?? null"
+          :is-pin-settings-open="menuOpen === 'pin'"
           :pin-settings-name="pinAction?.name ?? null"
           :pin-settings-color="pinAction?.color ?? null"
           :pin-settings-size="pinAction?.size ?? DEFAULT_PIN_SIZE"
       />
     </div>
-    <EditorActions
+    <div class="actions" v-if="menuOpen === null">
+      <div class="closed cursor-pointer" @click="() => menuOpen = 'pin'">
+        <Icon name="heroicons:plus-circle"/>
+      </div>
+      <div class="closed cursor-pointer" @click="() => menuOpen = 'editor'">
+        <Icon name="heroicons:cog-6-tooth-16-solid"/>
+      </div>
+    </div>
+    <MenuEditor
+        v-if="menuOpen === 'editor'"
         @handleActivateMovement="handleActivateMovement"
         @reset="$emit('reset')"
         @print="handlePrint"
+        @close="() => menuOpen = null"
     />
-    <PinActions
+    <MenuPin
+        v-if="menuOpen === 'pin'"
         ref="pin-action"
-        @handleActivateMovement="handleActivateMovement"
-        @reset="$emit('reset')"
-        @print="handlePrint"
+        @close="() => menuOpen = null"
     />
   </div>
 </template>
@@ -100,5 +111,25 @@ onUnmounted(() => {
 .image-preview-container {
   width: 100%;
   height: 100%;
+}
+
+.actions {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.closed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #111111;
+  color: white;
+  padding: 10px;
+  border-radius: 30px 0 0 30px;
 }
 </style>
