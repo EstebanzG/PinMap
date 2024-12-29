@@ -188,4 +188,24 @@ onUnmounted(() => {
   padding: 10px;
   border-radius: 30px 0 0 30px;
 }
+
+@media (max-width: 768px) {
+  .actions {
+    top: 0;
+    right: 50%;
+    transform: translateX(50%);
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .closed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111111;
+    color: white;
+    padding: 10px;
+    border-radius: 0 0 30px 30px;
+  }
+}
 </style>

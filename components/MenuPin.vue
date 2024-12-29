@@ -39,8 +39,8 @@ defineExpose({
 </script>
 
 <template>
-  <div class="open">
-    <div class="icon cursor-pointer" @click="() => $emit('close')">
+  <div class="open open-placement">
+    <div class="icon icon-placement cursor-pointer" @click="() => $emit('close')">
       <Icon
           name="heroicons:x-mark-20-solid"
           :style="{
@@ -62,8 +62,10 @@ defineExpose({
         <label for="color" class="parkinsans-text">Color</label>
         <input id="color" type="color" name="color" v-model="color"/>
       </div>
-      <button v-if="pin !== null" class="action-btn" type="button" @click="() => updateEvent(pin)">Save</button>
-      <button v-if="pin !== null" class="action-btn" type="button" @click="() => deleteEvent(pin)">Delete</button>
+      <div class="button-action">
+        <button v-if="pin !== null" class="action-btn" type="button" @click="() => updateEvent(pin)">Save</button>
+        <button v-if="pin !== null" class="action-btn" type="button" @click="() => deleteEvent(pin)">Delete</button>
+      </div>
     </form>
   </div>
 </template>

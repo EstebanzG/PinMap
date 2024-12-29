@@ -12,8 +12,8 @@ defineEmits<{
 </script>
 
 <template>
-  <div class="open">
-    <div class="icon cursor-pointer" @click="() => $emit('close')">
+  <div class="open open-placement">
+    <div class="icon icon-placement cursor-pointer" @click="() => $emit('close')">
       <Icon
           name="heroicons:x-mark-20-solid"
           :style="{
@@ -27,8 +27,10 @@ defineEmits<{
         <input id="handle-movement" :checked="isNavigationDisabled" type="checkbox" @change="$emit('handleActivateMovement')"/>
         <label for="handle-movement" class="parkinsans-text">Disable movements</label>
       </span>
-      <button class="action-btn" @click="$emit('print')">Print</button>
-      <button class="action-btn" @click="$emit('reset')">Reset</button>
+      <div class="button-action">
+        <button class="action-btn" @click="$emit('print')">Print</button>
+        <button class="action-btn" @click="$emit('reset')">Reset</button>
+      </div>
       <div class="parkinsans-text shortcuts">
         <h3>Shortcuts</h3>
         <ul>
