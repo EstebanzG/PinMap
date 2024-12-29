@@ -197,8 +197,6 @@ const refreshView = () => {
         names: (cluster.map(pin => pin.name ?? "")),
         size: cluster.reduce((sum, pin) => sum + pin.size, 0) / cluster.length,
       });
-
-      console.log(clusterToDisplay)
     }
   }
 };
