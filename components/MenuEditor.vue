@@ -43,6 +43,28 @@ defineEmits<{
 </template>
 
 <style scoped>
+.open {
+  position: absolute;
+  padding: 20px;
+  min-height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  background-color: #111111;
+  box-shadow: 2px 6px 22px -3px rgba(0, 0, 0, 0.95);
+}
+
+.open-placement {
+  left: auto;
+  top: 50%;
+  right: 0;
+  gap: 20px;
+  width: auto;
+  transform: translateY(-50%);
+  border-radius: 40px 0 0 40px;
+}
+
 .movement-control {
   display: flex;
   align-items: center;
