@@ -3,7 +3,7 @@ import {onUnmounted} from "vue";
 import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
 import ImageEdit from "./ImageEdit.vue";
 import MenuEditor from "~/components/MenuEditor.vue";
-import MenuPinMovement from "~/components/MenuPinMovement.vue";
+import MenuPinMovement, {type Coordinate} from "~/components/MenuPinMovement.vue";
 
 
 defineProps<{
@@ -22,6 +22,7 @@ const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
 const zoomScale = ref(1);
 const menuOpen = ref<"pin" | "editor" | null>(null);
+const pinClickCoordinate = ref<Coordinate | null>(null);
 const isNavigationDisabled = ref<boolean>(false);
 
 let imagePanzoomInstance: PanzoomObject | null = null;
@@ -53,6 +54,15 @@ const closeMenuPin = () => {
   handleActivateImageMovement(isNavigationDisabled.value);
 };
 
+const openMenuPin = (event: MouseEvent) => {
+  event.preventDefault();
+  menuOpen.value = "pin";
+  pinClickCoordinate.value = {
+    x: event.clientX,
+    y: event.clientY,
+  };
+};
+
 onMounted(() => {
   if (imageWrapper.value) {
     imagePanzoomInstance = panzoom(imageWrapper.value, defaultPanZoomOptions);
@@ -72,12 +82,11 @@ onMounted(() => {
 onUnmounted(() => {
   if (imagePanzoomInstance) {
     imagePanzoomInstance.destroy();
-  }
-});
+  }});
 </script>
 
 <template>
-  <div class="image-preview-container">
+  <div class="image-preview-container" @contextmenu="openMenuPin">
     <div ref="image-wrapper">
       <ImageEdit
           ref="edit-image"
@@ -87,9 +96,6 @@ onUnmounted(() => {
       />
     </div>
     <div class="actions" v-if="menuOpen === null">
-      <div class="closed cursor-pointer" @click="() => menuOpen = 'pin'">
-        <Icon name="heroicons:plus-circle"/>
-      </div>
       <div class="closed cursor-pointer" @click="() => menuOpen = 'editor'">
         <Icon name="heroicons:cog-6-tooth-16-solid"/>
       </div>
@@ -98,6 +104,7 @@ onUnmounted(() => {
         v-if="menuOpen === 'pin'"
         :zoomScale="zoomScale"
         :panzoomInstance="imagePanzoomInstance"
+        :click-coordinate="pinClickCoordinate"
         @close="closeMenuPin"
     />
     <MenuEditor

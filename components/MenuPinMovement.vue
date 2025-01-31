@@ -10,6 +10,7 @@ export interface Coordinate {
 const props = defineProps<{
   zoomScale: number,
   panzoomInstance: PanzoomObject | null,
+  clickCoordinate: Coordinate | null,
 }>()
 
 const emits = defineEmits<{
@@ -43,6 +44,14 @@ const handleDisableMenuMovement = () => {
 }
 
 onMounted(() => {
+  if (props.clickCoordinate && flyingMenu.value) {
+    const menuRect = flyingMenu.value.getBoundingClientRect();
+    const centerX = props.clickCoordinate.x - (menuRect.width / 2);
+    const centerY = props.clickCoordinate.y - (menuRect.height / 2);
+
+    flyingMenu.value.style.left = `${centerX}px`;
+    flyingMenu.value.style.top = `${centerY}px`;
+  }
   calculateTargetCoordinate();
 });
 
