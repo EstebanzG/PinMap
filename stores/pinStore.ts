@@ -59,7 +59,6 @@ export const usePinStore = defineStore('pinStore', () => {
       const bottom = pin.positionY;
       const top = bottom - size;
 
-      const center = pin.positionX;
       const left = pin.positionX - size / 2;
       const right = pin.positionX + size / 2;
 

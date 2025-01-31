@@ -10,7 +10,6 @@ export interface Coordinate {
 const props = defineProps<{
   zoomScale: number,
   panzoomInstance: PanzoomObject | null,
-  imageEdit: HTMLElement
 }>()
 
 const emits = defineEmits<{

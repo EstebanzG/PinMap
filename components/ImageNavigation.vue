@@ -98,7 +98,6 @@ onUnmounted(() => {
         v-if="menuOpen === 'pin'"
         :zoomScale="zoomScale"
         :panzoomInstance="imagePanzoomInstance"
-        :image-edit="imageEdit"
         @close="closeMenuPin"
     />
     <MenuEditor
