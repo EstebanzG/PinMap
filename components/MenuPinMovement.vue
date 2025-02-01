@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import type {PanzoomObject} from "@panzoom/panzoom";
+import {usePinStore} from "~/types/store/PinStore";
+import type {Pin} from "~/types/Label";
 
 export interface Coordinate {
   x: number;
@@ -70,7 +72,7 @@ const calculateTargetCoordinate = () => {
   const x = (flyingMenuCoordinate.right + 20) - imageBackgroundRect.left;
   const y = (flyingMenuCoordinate.top + (flyingMenuCoordinate.height / 2 + 10)) - imageBackgroundRect.top;
 
-  targetCoordinate.value =  {
+  targetCoordinate.value = {
     x: x / props.zoomScale,
     y: y / props.zoomScale,
   };
@@ -136,7 +138,7 @@ watch(() => props.zoomScale, () => emits('close'));
 
 .actions button {
   background-color: white;
-  border:  black 1px solid;
+  border: black 1px solid;
   cursor: pointer;
 }
 </style>

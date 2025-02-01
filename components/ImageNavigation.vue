@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import {onUnmounted} from "vue";
 import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
 import ImageEdit from "./ImageEdit.vue";
 import MenuEditor from "~/components/MenuEditor.vue";
 import MenuPinMovement, {type Coordinate} from "~/components/MenuPinMovement.vue";
-
 
 defineProps<{
   imageSrc: string;
@@ -82,7 +80,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (imagePanzoomInstance) {
     imagePanzoomInstance.destroy();
-  }});
+  }
+});
 </script>
 
 <template>

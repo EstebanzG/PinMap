@@ -24,7 +24,8 @@ defineEmits<{
     </div>
     <div class="content">
       <span class="movement-control">
-        <input id="handle-movement" :checked="isNavigationDisabled" type="checkbox" @change="$emit('handleActivateMovement')"/>
+        <input id="handle-movement" :checked="isNavigationDisabled" type="checkbox"
+               @change="$emit('handleActivateMovement')"/>
         <label for="handle-movement" class="parkinsans-text">Disable movements</label>
       </span>
       <div class="button-action">

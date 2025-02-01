@@ -3,9 +3,8 @@
 import {v4 as uuidv4} from 'uuid';
 import {type PanzoomObject} from "@panzoom/panzoom";
 import type {Coordinate} from "~/components/MenuPinMovement.vue";
-
-const DEFAULT_PIN_SIZE = 40;
-const DEFAULT_PIN_COLOR = '#ff0000';
+import {usePinStore} from "~/types/store/PinStore";
+import {DEFAULT_PIN_COLOR, DEFAULT_PIN_SIZE, type Pin} from "~/types/Label";
 
 const props = defineProps<{
   pin: Pin | null;

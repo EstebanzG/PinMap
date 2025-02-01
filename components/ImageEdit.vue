@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import html2canvas from "html2canvas";
 import constantColor from "~/utils/constant-color";
-import type {Label} from "~/stores/pinStore";
+import type {Label} from "~/types/Label";
+import {usePinStore} from "~/types/store/PinStore";
 
 const props = defineProps<{
   imageSrc: string,
@@ -47,16 +48,16 @@ const exportImage = async () => {
   link.click();
 }
 
-const getPinPositionY = (pin: Label) => {
-  const size = pin.size / props.zoomScale;
+const getLabelPositionY = (label: Label) => {
+  const size = label.size / props.zoomScale;
 
-  return ((pin.positionY - size) / props.imageDimensions.height) * 100;
+  return ((label.positionY - size) / props.imageDimensions.height) * 100;
 }
 
-const getPinPositionX = (pin: Label) => {
-  const size = pin.size / props.zoomScale;
+const getLabelPositionX = (label: Label) => {
+  const size = label.size / props.zoomScale;
 
-  return ((pin.positionX - size / 2) / props.imageDimensions.width) * 100;
+  return ((label.positionX - size / 2) / props.imageDimensions.width) * 100;
 }
 
 watch(() => props.zoomScale, () => pinStore.refreshView(props.zoomScale));
@@ -77,7 +78,7 @@ defineExpose({
             height: `${imageDimensions.height}px`,
           }"
   >
-    <Pin
+    <PinIcon
         v-for="(pin, index) in pinStore.pinsToDisplay"
         :key="index"
         :color="pin.color ?? 'black'"
@@ -85,13 +86,13 @@ defineExpose({
         :zoom-scale="zoomScale"
         class="pin"
         :style="{
-          top: `${getPinPositionY(pin)}%`,
-          left: `${getPinPositionX(pin)}%`,
+          top: `${getLabelPositionY(pin)}%`,
+          left: `${getLabelPositionX(pin)}%`,
           height: `${pin.size / zoomScale}px`,
           width: `${pin.size / zoomScale}px`,
         }"
     />
-    <Cluster
+    <ClusterIcon
         v-for="(cluster, index) in pinStore.clusterToDisplay"
         :key="index"
         class="pin"
@@ -100,8 +101,8 @@ defineExpose({
         :names="cluster.names"
         :zoom-scale="zoomScale"
         :style="{
-          top: `${getPinPositionY(cluster)}%`,
-          left: `${getPinPositionX(cluster)}%`,
+          top: `${getLabelPositionY(cluster)}%`,
+          left: `${getLabelPositionX(cluster)}%`,
           height: `${cluster.size / zoomScale}px`,
           width: `${cluster.size / zoomScale}px`,
         }"

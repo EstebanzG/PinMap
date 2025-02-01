@@ -19,7 +19,7 @@ const fileInput = ref<HTMLDivElement | null>(null);
       Click here to upload <span class="underline">your own map</span>.
     </h1>
     <h2 class="parkinsans-title-secondary" @click="$emit('useDefaultMap')">
-     Or here to use the <span class="underline">default map</span>.
+      Or here to use the <span class="underline">default map</span>.
     </h2>
   </div>
 </template>
