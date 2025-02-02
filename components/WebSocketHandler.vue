@@ -3,8 +3,6 @@ import {onMounted, onUnmounted, ref} from "vue";
 import {usePinStore} from "~/types/store/PinStore";
 import type {Message} from "~/types/Message";
 
-const emit = defineEmits(["connected", "disconnected", "error"]);
-
 const pinStore = usePinStore();
 const clientId = ref<string>('');
 const socket = ref<WebSocket | null>(null);
@@ -14,7 +12,6 @@ onMounted(() => {
 
   socket.value.onopen = () => {
     console.log("WebSocket connecté");
-    emit("connected");
   };
 
   socket.value.onmessage = (event) => {
@@ -38,12 +35,10 @@ onMounted(() => {
 
   socket.value.onclose = () => {
     console.log("WebSocket déconnecté");
-    emit("disconnected");
   };
 
   socket.value.onerror = (error) => {
     console.error("WebSocket erreur :", error);
-    emit("error", error);
   };
 });
 
