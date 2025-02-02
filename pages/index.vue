@@ -2,7 +2,7 @@
 import {ref} from "vue";
 
 const imageSrc = ref<string | null>(null);
-const imageDimensions = ref({width: 0, height: 0});
+const imageDimensions = ref<{ width: number; height: number }>({width: 0, height: 0});
 
 const handleFileInput = async (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -19,10 +19,10 @@ const handleFileInput = async (event: Event) => {
 };
 
 const useDefaultMap = () => {
-  imageSrc.value = '/default-map.svg';
+  imageSrc.value = "/default-map.svg";
 
   const img = new Image();
-  img.src = '/default-map.svg';
+  img.src = "/default-map.svg";
   img.onload = () => {
     imageDimensions.value = {width: img.naturalWidth, height: img.naturalHeight};
   };
@@ -48,6 +48,7 @@ const reset = () => {
         @reset="reset"
     />
   </div>
+  <WebSocketHandler />
 </template>
 
 <style scoped>

@@ -1,12 +1,33 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { v4 as uuidv4 } from "uuid";
-import type { Cluster, Pin } from "../Label";
+import {defineStore} from 'pinia';
+import {ref} from 'vue';
+import {v4 as uuidv4} from "uuid";
+import type {Cluster, Pin} from "../Label";
+import type {ActionsTypes, Message} from "~/types/Message";
 
 export const usePinStore = defineStore('pinStore', () => {
   const pins = ref<Pin[]>([]);
   const pinsToDisplay = ref<Pin[]>([]);
   const clusterToDisplay = ref<Cluster[]>([]);
+  let socket: WebSocket | null = null;
+  let clientId: string | null = null;
+
+  const initializedSocket = (ws: WebSocket, id: string) => {
+    socket = ws;
+    clientId = id;
+  };
+
+  const sendMessage = (type: ActionsTypes, pin: Pin) => {
+    const isSocketOpen = socket && socket.readyState === WebSocket.OPEN;
+    if (isSocketOpen && clientId) {
+      const message: Message = {
+        senderId: clientId,
+        type: type,
+        pin: pin,
+      }
+      console.log(message)
+      socket?.send(JSON.stringify(message));
+    }
+  };
 
   const pinsOverlap = (pin1: Pin, pin2: Pin, zoomScale: number): boolean => {
     const distance = Math.sqrt(
@@ -28,27 +49,45 @@ export const usePinStore = defineStore('pinStore', () => {
     return newCluster;
   };
 
-  const addPin = (pin: Pin, zoomScale: number) => {
+  const addPin = (pin: Pin, zoomScale: number, shouldSendMessage = true) => {
     pins.value.push(pin);
+    if (shouldSendMessage) {
+      sendMessage("addPin", pin);
+    }
     refreshView(zoomScale);
   };
 
-  const deleteLastPin = () => {
-    pins.value.pop();
+  const deleteLastPin = (shouldSendMessage = true) => {
+    const pin: Pin | undefined = pins.value.pop();
+    if (pin && shouldSendMessage) {
+      sendMessage("deletePin", pin);
+    }
   };
 
-  const deletePin = (pinId: string, zoomScale: number) => {
-    pins.value = pins.value.filter(pin => pin.id !== pinId);
+  const deletePin = (deletedPin: Pin, zoomScale: number, shouldSendMessage = true) => {
+    pins.value = pins.value.filter(pin => pin.id !== deletedPin.id);
+    if (shouldSendMessage) {
+      sendMessage("deletePin", deletedPin);
+    }
     refreshView(zoomScale);
   };
 
-  const updatePin = (updatedPin: Pin, zoomScale: number) => {
+  const updatePin = (updatedPin: Pin, zoomScale: number, shouldSendMessage = true) => {
     const index = pins.value.findIndex(pin => pin.id === updatedPin.id);
     if (index !== -1) {
       pins.value[index] = updatedPin;
+      if (shouldSendMessage) {
+        sendMessage("updatePin", updatedPin);
+      }
       refreshView(zoomScale);
     }
   };
+
+  const reset = () => {
+    pins.value = [];
+    pinsToDisplay.value = [];
+    clusterToDisplay.value = [];
+  }
 
   const getPinAtCoordinates = (clientX: number, clientY: number, zoomScale: number) => {
     return pinsToDisplay.value.find(pin => {
@@ -65,14 +104,15 @@ export const usePinStore = defineStore('pinStore', () => {
     }) ?? null;
   };
 
-  // View Management
   const refreshView = (zoomScale: number) => {
     const clusters: Pin[][] = [];
     const processed = new Set<string>();
 
     // Build clusters
     for (const pin of pins.value) {
-      if (processed.has(pin.id)) continue;
+      if (processed.has(pin.id)) {
+        continue;
+      }
 
       let currentCluster = findOrCreateCluster(pin, clusters, zoomScale);
       currentCluster.push(pin);
@@ -82,7 +122,9 @@ export const usePinStore = defineStore('pinStore', () => {
       while (changed) {
         changed = false;
         for (const otherPin of pins.value) {
-          if (processed.has(otherPin.id)) continue;
+          if (processed.has(otherPin.id)) {
+            continue;
+          }
 
           if (currentCluster.some(clusterPin => pinsOverlap(otherPin, clusterPin, zoomScale))) {
             currentCluster.push(otherPin);
@@ -124,10 +166,12 @@ export const usePinStore = defineStore('pinStore', () => {
     pins,
     pinsToDisplay,
     clusterToDisplay,
+    initializedSocket,
     addPin,
     deletePin,
     updatePin,
     deleteLastPin,
+    reset,
     refreshView,
     getPinAtCoordinates,
   };

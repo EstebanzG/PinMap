@@ -45,18 +45,6 @@ const handleDisableMenuMovement = () => {
   document.removeEventListener("mousemove", moveMenu);
 }
 
-onMounted(() => {
-  if (props.clickCoordinate && flyingMenu.value) {
-    const menuRect = flyingMenu.value.getBoundingClientRect();
-    const centerX = props.clickCoordinate.x - (menuRect.width / 2);
-    const centerY = props.clickCoordinate.y - (menuRect.height / 2);
-
-    flyingMenu.value.style.left = `${centerX}px`;
-    flyingMenu.value.style.top = `${centerY}px`;
-  }
-  calculateTargetCoordinate();
-});
-
 const calculateTargetCoordinate = () => {
   const imageBackground = document.querySelector(".image-background");
   if (!imageBackground) {
@@ -78,9 +66,21 @@ const calculateTargetCoordinate = () => {
   };
 }
 
+onMounted(() => {
+  if (props.clickCoordinate && flyingMenu.value) {
+    const menuRect = flyingMenu.value.getBoundingClientRect();
+    const centerX = props.clickCoordinate.x - (menuRect.width / 2);
+    const centerY = props.clickCoordinate.y - (menuRect.height / 2);
+
+    flyingMenu.value.style.left = `${centerX}px`;
+    flyingMenu.value.style.top = `${centerY}px`;
+  }
+  calculateTargetCoordinate();
+});
+
 const deleteExistingPin = () => {
   if (existingPin.value) {
-    pinStore.deletePin(existingPin.value.id, props.zoomScale);
+    pinStore.deletePin(existingPin.value, props.zoomScale);
     existingPin.value = null;
   }
 }
@@ -98,14 +98,14 @@ watch(() => props.zoomScale, () => emits('close'));
           @mouseup="handleDisableMenuMovement"
           type="button"
       >
-        <Icon name="solar:cursor-bold"/>
+        <Icon name="hugeicons:cursor-move-02" size="20px"/>
       </button>
       <div>
         <button type="button" v-if="existingPin" @click="deleteExistingPin">
-          <Icon name="bitcoin-icons:trash-filled"/>
+          <Icon name="hugeicons:delete-01" size="20px"/>
         </button>
         <button type="button" @click="() => emits('close')">
-          <Icon name="bitcoin-icons:cross-filled"/>
+          <Icon name="hugeicons:cancel-01" size="20px"/>
         </button>
       </div>
     </div>
@@ -137,8 +137,15 @@ watch(() => props.zoomScale, () => emits('close'));
 }
 
 .actions button {
-  background-color: white;
-  border: black 1px solid;
+  background-color: rgba(17, 17, 17);
+  border: solid 1px white;
+  border-bottom: none;
   cursor: pointer;
+  color: white;
+  padding: 10px;
+}
+
+.actions button:hover span {
+  transform: scale(1.1);
 }
 </style>

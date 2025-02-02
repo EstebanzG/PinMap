@@ -31,6 +31,7 @@ const createOrUpdatePin = () => {
   } else {
     updatePin()
   }
+  resetInfos();
 }
 
 const createPin = () => {
@@ -56,15 +57,19 @@ const updatePin = () => {
   }, props.zoomScale)
 }
 
+const resetInfos = () => {
+  name.value = '';
+  size.value = DEFAULT_PIN_SIZE;
+  color.value = DEFAULT_PIN_COLOR;
+}
+
 watch(() => props.pin, (pin: Pin | null) => {
   if (pin !== null) {
     name.value = pin.name ?? "";
     size.value = pin.size;
     color.value = pin.color ?? DEFAULT_PIN_COLOR;
   } else {
-    name.value = '';
-    size.value = DEFAULT_PIN_SIZE;
-    color.value = DEFAULT_PIN_COLOR;
+    resetInfos();
   }
 })
 </script>
@@ -77,8 +82,8 @@ watch(() => props.pin, (pin: Pin | null) => {
         <input id="name" type="text" name="pin name" v-model="name" placeholder="Chicago" autocomplete="off" required/>
       </div>
       <span class="form-group">
-        <label for="size" class="parkinsans-text">Size</label>
-        <input id="size" type="number" min="20" max="80" name="color" v-model="size"/>
+        <label for="size" class="parkinsans-text">Size*</label>
+        <input id="size" type="number" min="20" max="80" name="color" v-model="size" required/>
       </span>
       <div class="form-group">
         <label for="color" class="parkinsans-text">Color</label>

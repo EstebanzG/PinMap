@@ -3,6 +3,7 @@ import panzoom, {type PanzoomObject} from "@panzoom/panzoom";
 import ImageEdit from "./ImageEdit.vue";
 import MenuEditor from "~/components/MenuEditor.vue";
 import MenuPinMovement, {type Coordinate} from "~/components/MenuPinMovement.vue";
+import {usePinStore} from "~/types/store/PinStore";
 
 defineProps<{
   imageSrc: string;
@@ -12,9 +13,11 @@ defineProps<{
   };
 }>();
 
-defineEmits<{
+const emits = defineEmits<{
   (e: "reset"): void;
 }>();
+
+const pinStore = usePinStore();
 
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
@@ -59,6 +62,11 @@ const openMenuPin = (event: MouseEvent) => {
     x: event.clientX,
     y: event.clientY,
   };
+};
+
+const reset = () => {
+  pinStore.reset();
+  emits("reset");
 };
 
 onMounted(() => {
@@ -110,7 +118,7 @@ onUnmounted(() => {
         v-if="menuOpen === 'editor'"
         :is-navigation-disabled="isNavigationDisabled"
         @handleActivateMovement="() => isNavigationDisabled = !isNavigationDisabled"
-        @reset="$emit('reset')"
+        @reset="reset"
         @print="handlePrint"
         @close="() => menuOpen = null"
     />
@@ -144,6 +152,10 @@ onUnmounted(() => {
   color: white;
   padding: 10px;
   border-radius: 30px 0 0 30px;
+}
+
+.closed:hover span {
+  transform: scale(1.1);
 }
 
 @media (max-width: 768px) {

@@ -32,12 +32,20 @@ defineEmits<{
         <button class="action-btn" @click="$emit('print')">Print</button>
         <button class="action-btn" @click="$emit('reset')">Reset</button>
       </div>
-      <div class="parkinsans-text shortcuts">
-        <h3>Shortcuts</h3>
-        <ul>
-          <li>CTRL + Z to remove the last pin</li>
-          <li>CTRL + S to export the map</li>
-        </ul>
+      <div class="parkinsans-text info">
+        <div>
+          <h3>Information</h3>
+          <ul>
+            <li>Right-click to open the pins menu</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Shortcuts</h3>
+          <ul>
+            <li>CTRL + Z to remove the last pin</li>
+            <li>CTRL + S to export the map</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -46,24 +54,38 @@ defineEmits<{
 <style scoped>
 .open {
   position: absolute;
+  background-color: #111111;
+  box-shadow: 2px 6px 22px -3px rgba(0, 0, 0, 0.95);
+
   padding: 20px;
-  min-height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  background-color: #111111;
-  box-shadow: 2px 6px 22px -3px rgba(0, 0, 0, 0.95);
+  gap: 20px;
+  width: 22vw;
 }
 
 .open-placement {
   left: auto;
   top: 50%;
   right: 0;
-  gap: 20px;
-  width: auto;
   transform: translateY(-50%);
   border-radius: 40px 0 0 40px;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  justify-content: center;
+  width: 100%;
+}
+
+.icon:hover span {
+  transform: scale(1.5);
+  transition: ease 0.1s;
 }
 
 .movement-control {
@@ -87,7 +109,10 @@ ul {
   margin: 0;
 }
 
-.shortcuts {
+.info {
   color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 </style>
