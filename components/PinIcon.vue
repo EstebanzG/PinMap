@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import {useZoomStore} from "~/types/store/ZoomStore";
+
 defineProps<{
   color: string,
   tooltipText: string,
-  zoomScale: number
 }>();
+
+const zoomStore = useZoomStore();
 </script>
 
 <template>
@@ -22,9 +25,9 @@ defineProps<{
     <span
         class="tooltip parkinsans-text"
         :style="{
-          fontSize: `${12 / zoomScale}px`,
+          fontSize: `${12 / zoomStore.zoomLevel}px`,
           width: 'fit-content',
-          padding: `${5 / zoomScale}px`,
+          padding: `${5 / zoomStore.zoomLevel}px`
         }"
     >{{ tooltipText }}</span>
   </div>

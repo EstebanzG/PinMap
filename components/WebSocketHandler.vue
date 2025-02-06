@@ -60,21 +60,21 @@ const handleDeletePinMessage = (message: Message) => {
   if (!message.pin) {
     return;
   }
-  pinStore.deletePin(message.pin, 1, false);
+  pinStore.deletePin(message.pin, false);
 };
 
 const handleAddPinMessage = (message: Message) => {
   if (!message.pin) {
     return;
   }
-  pinStore.addPin(message.pin, 1, false);
+  pinStore.addPin(message.pin, false);
 };
 
 const handleUpdatePinMessage = (message: Message) => {
   if (!message.pin) {
     return;
   }
-  pinStore.updatePin(message.pin, 1, false);
+  pinStore.updatePin(message.pin, false);
 };
 
 onUnmounted(() => {

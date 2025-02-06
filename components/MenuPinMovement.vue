@@ -3,6 +3,7 @@
 import type {PanzoomObject} from "@panzoom/panzoom";
 import {usePinStore} from "~/types/store/PinStore";
 import type {Pin} from "~/types/Label";
+import {useZoomStore} from "~/types/store/ZoomStore";
 
 export interface Coordinate {
   x: number;
@@ -10,7 +11,6 @@ export interface Coordinate {
 }
 
 const props = defineProps<{
-  zoomScale: number,
   panzoomInstance: PanzoomObject | null,
   clickCoordinate: Coordinate | null,
 }>()
@@ -20,6 +20,8 @@ const emits = defineEmits<{
 }>();
 
 const pinStore = usePinStore();
+const zoomStore = useZoomStore();
+
 const flyingMenu = useTemplateRef('flying-menu');
 const targetCoordinate = ref<Coordinate | null>(null);
 const existingPin = ref<Pin | null>(null);
@@ -32,7 +34,6 @@ const moveMenu = (event: MouseEvent) => {
     existingPin.value = pinStore.getPinAtCoordinates(
         targetCoordinate.value?.x ?? 0,
         targetCoordinate.value?.y ?? 0,
-        props.zoomScale
     );
   }
 };
@@ -61,8 +62,8 @@ const calculateTargetCoordinate = () => {
   const y = (flyingMenuCoordinate.top + (flyingMenuCoordinate.height / 2 + 10)) - imageBackgroundRect.top;
 
   targetCoordinate.value = {
-    x: x / props.zoomScale,
-    y: y / props.zoomScale,
+    x: x / zoomStore.zoomLevel,
+    y: y / zoomStore.zoomLevel,
   };
 }
 
@@ -80,12 +81,12 @@ onMounted(() => {
 
 const deleteExistingPin = () => {
   if (existingPin.value) {
-    pinStore.deletePin(existingPin.value, props.zoomScale);
+    pinStore.deletePin(existingPin.value);
     existingPin.value = null;
   }
 }
 
-watch(() => props.zoomScale, () => emits('close'));
+watch(() => zoomStore.zoomLevel, () => emits('close'));
 
 </script>
 
@@ -112,7 +113,6 @@ watch(() => props.zoomScale, () => emits('close'));
     <MenuPin
         ref="menu-pin"
         :pin="existingPin"
-        :zoom-scale="zoomScale"
         :panzoom-instance="panzoomInstance"
         :target-coordinate="targetCoordinate ?? { x: 0, y: 0 }"
         @calculate-target-coordinate="calculateTargetCoordinate"

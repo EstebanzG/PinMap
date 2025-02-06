@@ -3,6 +3,7 @@ import {ref} from 'vue';
 import {v4 as uuidv4} from "uuid";
 import type {Cluster, Pin} from "../Label";
 import type {ActionsTypes, Message} from "~/types/Message";
+import {useZoomStore} from "~/types/store/ZoomStore";
 
 export const usePinStore = defineStore('pinStore', () => {
   const pins = ref<Pin[]>([]);
@@ -29,18 +30,19 @@ export const usePinStore = defineStore('pinStore', () => {
     }
   };
 
-  const pinsOverlap = (pin1: Pin, pin2: Pin, zoomScale: number): boolean => {
+  const pinsOverlap = (pin1: Pin, pin2: Pin): boolean => {
+    const zoomStore = useZoomStore();
     const distance = Math.sqrt(
       Math.pow(pin2.positionX - pin1.positionX, 2) +
       Math.pow(pin2.positionY - pin1.positionY, 2)
     );
-    const combinedRadius = (pin1.size + pin2.size) / (2 * zoomScale);
+    const combinedRadius = (pin1.size + pin2.size) / (2 * zoomStore.zoomLevel);
     return distance < combinedRadius;
   };
 
-  const findOrCreateCluster = (pin: Pin, clusters: Pin[][], zoomScale: number): Pin[] => {
+  const findOrCreateCluster = (pin: Pin, clusters: Pin[][]): Pin[] => {
     for (const cluster of clusters) {
-      if (cluster.some(clusterPin => pinsOverlap(pin, clusterPin, zoomScale))) {
+      if (cluster.some(clusterPin => pinsOverlap(pin, clusterPin))) {
         return cluster;
       }
     }
@@ -49,12 +51,12 @@ export const usePinStore = defineStore('pinStore', () => {
     return newCluster;
   };
 
-  const addPin = (pin: Pin, zoomScale: number, shouldSendMessage = true) => {
+  const addPin = (pin: Pin, shouldSendMessage = true) => {
     pins.value.push(pin);
     if (shouldSendMessage) {
       sendMessage("addPin", pin);
     }
-    refreshView(zoomScale);
+    refreshView();
   };
 
   const deleteLastPin = (shouldSendMessage = true) => {
@@ -64,22 +66,22 @@ export const usePinStore = defineStore('pinStore', () => {
     }
   };
 
-  const deletePin = (deletedPin: Pin, zoomScale: number, shouldSendMessage = true) => {
+  const deletePin = (deletedPin: Pin, shouldSendMessage = true) => {
     pins.value = pins.value.filter(pin => pin.id !== deletedPin.id);
     if (shouldSendMessage) {
       sendMessage("deletePin", deletedPin);
     }
-    refreshView(zoomScale);
+    refreshView();
   };
 
-  const updatePin = (updatedPin: Pin, zoomScale: number, shouldSendMessage = true) => {
+  const updatePin = (updatedPin: Pin, shouldSendMessage = true) => {
     const index = pins.value.findIndex(pin => pin.id === updatedPin.id);
     if (index !== -1) {
       pins.value[index] = updatedPin;
       if (shouldSendMessage) {
         sendMessage("updatePin", updatedPin);
       }
-      refreshView(zoomScale);
+      refreshView();
     }
   };
 
@@ -89,9 +91,11 @@ export const usePinStore = defineStore('pinStore', () => {
     clusterToDisplay.value = [];
   }
 
-  const getPinAtCoordinates = (clientX: number, clientY: number, zoomScale: number) => {
+  const getPinAtCoordinates = (clientX: number, clientY: number) => {
+    const zoomStore = useZoomStore();
+
     return pinsToDisplay.value.find(pin => {
-      const size = pin.size / zoomScale;
+      const size = pin.size / zoomStore.zoomLevel;
       const bottom = pin.positionY;
       const top = bottom - size;
       const left = pin.positionX - size / 2;
@@ -104,7 +108,7 @@ export const usePinStore = defineStore('pinStore', () => {
     }) ?? null;
   };
 
-  const refreshView = (zoomScale: number) => {
+  const refreshView = () => {
     const clusters: Pin[][] = [];
     const processed = new Set<string>();
 
@@ -114,7 +118,7 @@ export const usePinStore = defineStore('pinStore', () => {
         continue;
       }
 
-      let currentCluster = findOrCreateCluster(pin, clusters, zoomScale);
+      let currentCluster = findOrCreateCluster(pin, clusters);
       currentCluster.push(pin);
       processed.add(pin.id);
 
@@ -126,7 +130,7 @@ export const usePinStore = defineStore('pinStore', () => {
             continue;
           }
 
-          if (currentCluster.some(clusterPin => pinsOverlap(otherPin, clusterPin, zoomScale))) {
+          if (currentCluster.some(clusterPin => pinsOverlap(otherPin, clusterPin))) {
             currentCluster.push(otherPin);
             processed.add(otherPin.id);
             changed = true;

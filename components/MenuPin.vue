@@ -10,7 +10,6 @@ const props = defineProps<{
   pin: Pin | null;
   targetCoordinate: Coordinate;
   panzoomInstance: PanzoomObject | null,
-  zoomScale: number;
 }>()
 
 defineEmits<{
@@ -42,7 +41,7 @@ const createPin = () => {
     size: size.value,
     positionX: props.targetCoordinate.x,
     positionY: props.targetCoordinate.y,
-  }, props.zoomScale)
+  })
 }
 
 const updatePin = () => {
@@ -54,7 +53,7 @@ const updatePin = () => {
     name: name.value,
     size: size.value,
     color: color.value,
-  }, props.zoomScale)
+  })
 }
 
 const resetInfos = () => {

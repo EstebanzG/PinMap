@@ -4,6 +4,7 @@ import ImageEdit from "./ImageEdit.vue";
 import MenuEditor from "~/components/MenuEditor.vue";
 import MenuPinMovement, {type Coordinate} from "~/components/MenuPinMovement.vue";
 import {usePinStore} from "~/types/store/PinStore";
+import {useZoomStore} from "~/types/store/ZoomStore";
 
 defineProps<{
   imageSrc: string;
@@ -18,10 +19,10 @@ const emits = defineEmits<{
 }>();
 
 const pinStore = usePinStore();
+const zoomStore = useZoomStore();
 
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
-const zoomScale = ref(1);
 const menuOpen = ref<"pin" | "editor" | null>(null);
 const pinClickCoordinate = ref<Coordinate | null>(null);
 const isNavigationDisabled = ref<boolean>(false);
@@ -75,7 +76,7 @@ onMounted(() => {
 
     const wheelHandler = (event: WheelEvent) => {
       event.preventDefault();
-      zoomScale.value = imagePanzoomInstance?.zoomWithWheel(event, {step: 0.1}).scale ?? 1;
+      zoomStore.zoomLevel = imagePanzoomInstance?.zoomWithWheel(event, {step: 0.1}).scale ?? 1;
     };
     document.addEventListener("wheel", wheelHandler, {passive: false});
 
@@ -99,7 +100,7 @@ onUnmounted(() => {
           ref="edit-image"
           :image-src="imageSrc"
           :image-dimensions="imageDimensions"
-          :zoom-scale="zoomScale"
+          :zoom-scale="zoomStore.zoomLevel"
       />
     </div>
     <div class="actions" v-if="menuOpen === null">
@@ -109,7 +110,6 @@ onUnmounted(() => {
     </div>
     <MenuPinMovement
         v-if="menuOpen === 'pin'"
-        :zoomScale="zoomScale"
         :panzoomInstance="imagePanzoomInstance"
         :click-coordinate="pinClickCoordinate"
         @close="closeMenuPin"

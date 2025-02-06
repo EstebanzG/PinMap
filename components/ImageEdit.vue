@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import constantColor from "~/utils/constant-color";
 import type {Label} from "~/types/Label";
 import {usePinStore} from "~/types/store/PinStore";
+import {useZoomStore} from "~/types/store/ZoomStore";
 
 const props = defineProps<{
   imageSrc: string,
@@ -10,10 +11,10 @@ const props = defineProps<{
     width: number
     height: number
   },
-  zoomScale: number,
 }>()
 
 const pinStore = usePinStore();
+const zoomStore = useZoomStore();
 
 const imageElement = useTemplateRef('image-element')
 
@@ -24,7 +25,7 @@ onMounted(() => {
     if (event.key === 'z' && ctrlKey) {
       event.preventDefault();
       pinStore.deleteLastPin();
-      pinStore.refreshView(props.zoomScale);
+      pinStore.refreshView(zoomStore.zoomLevel);
       return;
     }
     if (event.key === 's' && ctrlKey) {
@@ -49,18 +50,18 @@ const exportImage = async () => {
 }
 
 const getLabelPositionY = (label: Label) => {
-  const size = label.size / props.zoomScale;
+  const size = label.size / zoomStore.zoomLevel;
 
   return ((label.positionY - size) / props.imageDimensions.height) * 100;
 }
 
 const getLabelPositionX = (label: Label) => {
-  const size = label.size / props.zoomScale;
+  const size = label.size / zoomStore.zoomLevel;
 
   return ((label.positionX - size / 2) / props.imageDimensions.width) * 100;
 }
 
-watch(() => props.zoomScale, () => pinStore.refreshView(props.zoomScale));
+watch(() => zoomStore.zoomLevel, () => pinStore.refreshView());
 
 defineExpose({
   exportImage,
@@ -83,13 +84,12 @@ defineExpose({
         :key="index"
         :color="pin.color ?? 'black'"
         :tooltipText="pin.name ?? ''"
-        :zoom-scale="zoomScale"
         class="pin"
         :style="{
           top: `${getLabelPositionY(pin)}%`,
           left: `${getLabelPositionX(pin)}%`,
-          height: `${pin.size / zoomScale}px`,
-          width: `${pin.size / zoomScale}px`,
+          height: `${pin.size / zoomStore.zoomLevel}px`,
+          width: `${pin.size / zoomStore.zoomLevel}px`,
         }"
     />
     <ClusterIcon
@@ -99,12 +99,11 @@ defineExpose({
         :color=constantColor.RED
         :nb-of-pins="cluster.numberOfPins"
         :names="cluster.names"
-        :zoom-scale="zoomScale"
         :style="{
           top: `${getLabelPositionY(cluster)}%`,
           left: `${getLabelPositionX(cluster)}%`,
-          height: `${cluster.size / zoomScale}px`,
-          width: `${cluster.size / zoomScale}px`,
+          height: `${cluster.size / zoomStore.zoomLevel}px`,
+          width: `${cluster.size / zoomStore.zoomLevel}px`,
         }"
     />
   </div>

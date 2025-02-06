@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import {useZoomStore} from "~/types/store/ZoomStore";
+
 const props = defineProps<{
   color: string,
   nbOfPins: number,
   names: string[],
-  zoomScale: number
 }>();
+
+const zoomStore = useZoomStore();
 
 const displayedNames = computed(() => {
   const maxNames = 10;
@@ -12,7 +15,6 @@ const displayedNames = computed(() => {
       ? [...props.names.slice(0, maxNames), `...`]
       : props.names;
 });
-
 </script>
 
 <template>
@@ -36,9 +38,9 @@ const displayedNames = computed(() => {
     <div
         class="tooltip parkinsans-text"
         :style="{
-          fontSize: `${12 / zoomScale}px`,
+          fontSize: `${12 / zoomStore.zoomLevel}px`,
           width: 'fit-content',
-          padding: `${5 / zoomScale}px`,
+          padding: `${5 / zoomStore.zoomLevel}px`
       }"
     >
       <ul>
