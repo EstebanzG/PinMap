@@ -102,7 +102,7 @@ watch(() => zoomStore.zoomLevel, () => emits('close'));
         <Icon name="hugeicons:cursor-move-02" size="20px"/>
       </button>
       <div>
-        <button type="button" v-if="existingPin" @click="deleteExistingPin">
+        <button type="button" v-if="existingPin && !existingPin.shouldBeValidated" @click="deleteExistingPin">
           <Icon name="hugeicons:delete-01" size="20px"/>
         </button>
         <button type="button" @click="() => emits('close')">

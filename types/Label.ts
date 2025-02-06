@@ -7,7 +7,9 @@ export interface Label {
 
 export interface Pin extends Label {
   color?: string | null,
-  name?: string | null
+  name?: string | null,
+  shouldBeValidated?: boolean,
+  validatedBy?: string[]
 }
 
 export interface Cluster extends Label {

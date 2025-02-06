@@ -17,6 +17,14 @@ export const usePinStore = defineStore('pinStore', () => {
     clientId = id;
   };
 
+  const isValidatedByClient = (pin: Pin): boolean => {
+    if (!clientId) {
+      return false;
+    }
+
+    return pin.validatedBy?.includes(clientId) ?? false;
+  }
+
   const sendMessage = (type: ActionsTypes, pin: Pin) => {
     const isSocketOpen = socket && socket.readyState === WebSocket.OPEN;
     if (isSocketOpen && clientId) {
@@ -25,10 +33,17 @@ export const usePinStore = defineStore('pinStore', () => {
         type: type,
         pin: pin,
       }
-      console.log(message)
       socket?.send(JSON.stringify(message));
     }
   };
+
+  const validatePin = (pin: Pin) => {
+    if (clientId) {
+      pin.validatedBy?.push(clientId ?? "");
+    }
+
+    updatePin(pin);
+  }
 
   const pinsOverlap = (pin1: Pin, pin2: Pin): boolean => {
     const zoomStore = useZoomStore();
@@ -52,6 +67,9 @@ export const usePinStore = defineStore('pinStore', () => {
   };
 
   const addPin = (pin: Pin, shouldSendMessage = true) => {
+    if (clientId && shouldSendMessage) {
+      pin.validatedBy = [clientId];
+    }
     pins.value.push(pin);
     if (shouldSendMessage) {
       sendMessage("addPin", pin);
@@ -170,7 +188,9 @@ export const usePinStore = defineStore('pinStore', () => {
     pins,
     pinsToDisplay,
     clusterToDisplay,
+    validatePin,
     initializedSocket,
+    isValidatedByClient,
     addPin,
     deletePin,
     updatePin,

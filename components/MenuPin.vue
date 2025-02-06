@@ -1,22 +1,21 @@
 <script setup lang="ts">
-
-import {v4 as uuidv4} from 'uuid';
-import {type PanzoomObject} from "@panzoom/panzoom";
-import type {Coordinate} from "~/components/MenuPinMovement.vue";
-import {usePinStore} from "~/types/store/PinStore";
-import {DEFAULT_PIN_COLOR, DEFAULT_PIN_SIZE, type Pin} from "~/types/Label";
+import { v4 as uuidv4 } from 'uuid';
+import { type PanzoomObject } from '@panzoom/panzoom';
+import type { Coordinate } from '~/components/MenuPinMovement.vue';
+import { usePinStore } from '~/types/store/PinStore';
+import { DEFAULT_PIN_COLOR, DEFAULT_PIN_SIZE, type Pin } from '~/types/Label';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
   pin: Pin | null;
   targetCoordinate: Coordinate;
-  panzoomInstance: PanzoomObject | null,
-}>()
+  panzoomInstance: PanzoomObject | null;
+}>();
 
 defineEmits<{
   (e: 'calculateTargetCoordinate'): Coordinate;
   (e: 'close'): void;
 }>();
-
 
 const pinStore = usePinStore();
 
@@ -24,14 +23,17 @@ const name = ref<string>('');
 const size = ref<number>(DEFAULT_PIN_SIZE);
 const color = ref<string>(DEFAULT_PIN_COLOR);
 
+const isPinValidated = computed(() => props.pin && !props.pin.shouldBeValidated);
+const canValidatePin = computed(() => props.pin && !pinStore.isValidatedByClient(props.pin));
+
 const createOrUpdatePin = () => {
   if (props.pin === null) {
-    createPin()
+    createPin();
   } else {
-    updatePin()
+    updatePin();
   }
   resetInfos();
-}
+};
 
 const createPin = () => {
   pinStore.addPin({
@@ -41,57 +43,77 @@ const createPin = () => {
     size: size.value,
     positionX: props.targetCoordinate.x,
     positionY: props.targetCoordinate.y,
-  })
-}
+    shouldBeValidated: true,
+  });
+};
 
 const updatePin = () => {
-  if (props.pin === null) {
-    return;
+  if (props.pin) {
+    pinStore.updatePin({
+      ...props.pin,
+      name: name.value,
+      size: size.value,
+      color: color.value,
+    });
   }
-  pinStore.updatePin({
-    ...props.pin,
-    name: name.value,
-    size: size.value,
-    color: color.value,
-  })
-}
+};
 
 const resetInfos = () => {
   name.value = '';
   size.value = DEFAULT_PIN_SIZE;
   color.value = DEFAULT_PIN_COLOR;
-}
+};
 
-watch(() => props.pin, (pin: Pin | null) => {
-  if (pin !== null) {
-    name.value = pin.name ?? "";
-    size.value = pin.size;
-    color.value = pin.color ?? DEFAULT_PIN_COLOR;
-  } else {
-    resetInfos();
+const validatePin = () => {
+  if (props.pin) {
+    pinStore.validatePin(props.pin);
   }
-})
+};
+
+const deletePin = () => {
+  if (props.pin) {
+    pinStore.deletePin(props.pin);
+  }
+};
+
+watch(
+    () => props.pin,
+    (pin: Pin | null) => {
+      if (pin) {
+        name.value = pin.name ?? '';
+        size.value = pin.size;
+        color.value = pin.color ?? DEFAULT_PIN_COLOR;
+      } else {
+        resetInfos();
+      }
+    }
+);
 </script>
 
 <template>
   <div class="open" ref="menu">
-    <form class="content" ref="form" @submit.prevent="createOrUpdatePin">
-      <div class="form-group">
-        <label for="name" class="parkinsans-text">Pin name*</label>
-        <input id="name" type="text" name="pin name" v-model="name" placeholder="Chicago" autocomplete="off" required/>
+    <form v-if="!pin || isPinValidated" class="content" ref="form" @submit.prevent="createOrUpdatePin">
+      <div class="inputs">
+        <div class="form-group">
+          <label for="name" class="parkinsans-text">Pin name*</label>
+          <input id="name" type="text" v-model="name" placeholder="Chicago" required />
+        </div>
+        <span class="form-group">
+          <label for="size" class="parkinsans-text">Size*</label>
+          <input id="size" type="number" min="20" max="80" v-model="size" required />
+        </span>
+        <div class="form-group">
+          <label for="color" class="parkinsans-text">Color</label>
+          <input id="color" type="color" v-model="color" />
+        </div>
       </div>
-      <span class="form-group">
-        <label for="size" class="parkinsans-text">Size*</label>
-        <input id="size" type="number" min="20" max="80" name="color" v-model="size" required/>
-      </span>
-      <div class="form-group">
-        <label for="color" class="parkinsans-text">Color</label>
-        <input id="color" type="color" name="color" v-model="color"/>
-      </div>
-      <div class="button-action">
-        <button class="action-btn" type="submit">{{ pin === null ? 'Create' : 'Update' }}</button>
-      </div>
+      <button class="action-btn" type="submit">{{ pin === null ? 'Create' : 'Update' }}</button>
     </form>
+    <div v-else-if="canValidatePin">
+      <button class="action-btn" type="button" @click="validatePin">Validate</button>
+      <button class="action-btn" type="button" @click="deletePin">Deny</button>
+    </div>
+    <p v-else>Waiting for approval</p>
   </div>
   <div class="target-selector"></div>
 </template>
@@ -99,13 +121,11 @@ watch(() => props.pin, (pin: Pin | null) => {
 <style scoped>
 .open {
   padding: 20px;
-  min-height: fit-content;
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  align-items: center;
   background-color: rgba(17, 17, 17);
   border: solid 1px white;
+  height: 347px;
+  width: 282px;
+  color: white
 }
 
 .form-group {
@@ -113,6 +133,21 @@ watch(() => props.pin, (pin: Pin | null) => {
   flex-direction: column;
   color: white;
   gap: 5px;
+  width: 100%;
+}
+
+form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.inputs {
+  height: 75%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .target-selector {
@@ -150,7 +185,6 @@ input[type="color"]::-webkit-color-swatch {
 
 input[type="text"] {
   height: 40px;
-  width: 200px;
   outline: none;
   padding: 0 20px;
   background: transparent;
@@ -168,7 +202,6 @@ input[type="text"]:focus {
 
 input[type="number"] {
   height: 40px;
-  width: 200px;
   outline: none;
   padding: 0 20px;
   background: transparent;
