@@ -109,11 +109,13 @@ watch(
       </div>
       <button class="action-btn" type="submit">{{ pin === null ? 'Create' : 'Update' }}</button>
     </form>
-    <div v-else-if="canValidatePin">
-      <button class="action-btn" type="button" @click="validatePin">Validate</button>
-      <button class="action-btn" type="button" @click="deletePin">Deny</button>
+    <div class="button-wrapper" v-else-if="canValidatePin">
+      <button class="action-btn action-validation-btn parkinsans-title" type="button" @click="validatePin">Validate</button>
+      <button class="action-btn action-validation-btn parkinsans-title" type="button" @click="deletePin">Deny</button>
     </div>
-    <p v-else>Waiting for approval</p>
+    <div v-else>
+      <p class="parkinsans-title text-tall">Awaiting approval</p>
+    </div>
   </div>
   <div class="target-selector"></div>
 </template>
@@ -125,7 +127,19 @@ watch(
   border: solid 1px white;
   height: 347px;
   width: 282px;
-  color: white
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.action-validation-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  font-size: 30px;
 }
 
 .form-group {
@@ -138,9 +152,23 @@ watch(
 
 form {
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.button-wrapper {
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.text-tall {
+  text-align: center;
+  font-size: 40px;
 }
 
 .inputs {

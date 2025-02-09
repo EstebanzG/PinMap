@@ -24,12 +24,6 @@ body {
     padding-bottom: 20px;
 }
 
-.button-action {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
 @media (max-width: 768px) {
     .open-placement {
         left: 50%;
