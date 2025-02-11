@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref} from "vue";
 import {usePinStore} from "~/types/store/PinStore";
-import type {Message} from "~/types/Message";
+import type {ActionMessage, InitializationMessage, UsersChangeMessage,} from "~/types/Message";
+import {useUsersStore} from "~/types/store/UsersStore";
 
 const pinStore = usePinStore();
+const usersStore = useUsersStore();
 const clientId = ref<string>('');
 const socket = ref<WebSocket | null>(null);
 
@@ -15,19 +17,23 @@ onMounted(() => {
   };
 
   socket.value.onmessage = (event) => {
-    const message: Message = JSON.parse(event.data);
+    const message: ActionMessage | InitializationMessage | UsersChangeMessage = JSON.parse(event.data);
     switch (message.type) {
       case "initialization":
-        handleInitializationMessage(message);
+        handleInitializationMessage(message as InitializationMessage);
+        break;
+      case "usersChange":
+        usersStore.nbOfUsers = (message as UsersChangeMessage).nbOfUsers;
+        usersStore.minimalNbOfValidations = (message as UsersChangeMessage).minimalNbOfValidations;
         break;
       case "deletePin":
-        handleDeletePinMessage(message);
+        handleDeletePinMessage(message as ActionMessage);
         break;
       case "addPin":
-        handleAddPinMessage(message);
+        handleAddPinMessage(message as ActionMessage);
         break;
       case "updatePin":
-        handleUpdatePinMessage(message);
+        handleUpdatePinMessage(message as ActionMessage);
         break;
       default:
     }
@@ -42,38 +48,32 @@ onMounted(() => {
   };
 });
 
-const handleInitializationMessage = (message: Message) => {
-  if (!message.pins) {
-    return;
+onUnmounted(() => {
+  if (socket.value) {
+    socket.value.close();
   }
+});
+
+const handleInitializationMessage = (message: InitializationMessage) => {
   pinStore.pins = message.pins;
-  if (!message.clientId) {
-    return;
-  }
   clientId.value = message.clientId;
+  usersStore.nbOfUsers = message.nbOfUsers;
+  usersStore.minimalNbOfValidations = message.minimalNbOfValidations;
+
   if (socket.value) {
     pinStore.initializedSocket(socket.value, clientId.value);
   }
 };
 
-const handleDeletePinMessage = (message: Message) => {
-  if (!message.pin) {
-    return;
-  }
+const handleDeletePinMessage = (message: ActionMessage) => {
   pinStore.deletePin(message.pin, false);
 };
 
-const handleAddPinMessage = (message: Message) => {
-  if (!message.pin) {
-    return;
-  }
+const handleAddPinMessage = (message: ActionMessage) => {
   pinStore.addPin(message.pin, false);
 };
 
-const handleUpdatePinMessage = (message: Message) => {
-  if (!message.pin) {
-    return;
-  }
+const handleUpdatePinMessage = (message: ActionMessage) => {
   pinStore.updatePin(message.pin, false);
 };
 
@@ -84,4 +84,20 @@ onUnmounted(() => {
 });
 </script>
 <template>
+  <div>
+    {{ usersStore.nbOfUsers }} user{{ usersStore.nbOfUsers > 1 ? 's' : '' }} connected
+  </div>
 </template>
+<style scoped>
+div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem;
+  background-color: #f0f0f0;
+  border-radius: 0 0 0 1rem;
+  border: 1px solid #ccc;
+  font-size: 1.5rem;
+  z-index: 100;
+}
+</style>

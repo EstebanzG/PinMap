@@ -2,7 +2,7 @@ import {defineStore} from 'pinia';
 import {ref} from 'vue';
 import {v4 as uuidv4} from "uuid";
 import type {Cluster, Pin} from "../Label";
-import type {ActionsTypes, Message} from "~/types/Message";
+import type {ActionMessage, ActionsTypes} from "~/types/Message";
 import {useZoomStore} from "~/types/store/ZoomStore";
 
 export const usePinStore = defineStore('pinStore', () => {
@@ -22,13 +22,13 @@ export const usePinStore = defineStore('pinStore', () => {
       return false;
     }
 
-    return pin.validatedBy?.includes(clientId) ?? false;
+    return pin.validatedBy.includes(clientId);
   }
 
   const sendMessage = (type: ActionsTypes, pin: Pin) => {
     const isSocketOpen = socket && socket.readyState === WebSocket.OPEN;
     if (isSocketOpen && clientId) {
-      const message: Message = {
+      const message: ActionMessage = {
         senderId: clientId,
         type: type,
         pin: pin,
@@ -39,7 +39,7 @@ export const usePinStore = defineStore('pinStore', () => {
 
   const validatePin = (pin: Pin) => {
     if (clientId) {
-      pin.validatedBy?.push(clientId ?? "");
+      pin.validatedBy?.push(clientId);
     }
 
     updatePin(pin);
@@ -67,8 +67,9 @@ export const usePinStore = defineStore('pinStore', () => {
   };
 
   const addPin = (pin: Pin, shouldSendMessage = true) => {
-    if (clientId && shouldSendMessage) {
-      pin.validatedBy = [clientId];
+    const isPinCreateByClient = shouldSendMessage
+    if (clientId && isPinCreateByClient){
+      pin.validatedBy.push(clientId);
     }
     pins.value.push(pin);
     if (shouldSendMessage) {

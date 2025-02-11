@@ -84,7 +84,7 @@ defineExpose({
         :key="index"
         :color="pin.color ?? 'black'"
         :tooltipText="pin.name ?? ''"
-        :shouldBeValidated="pin.shouldBeValidated ?? false"
+        :waiting-for-validation="pin.status === 'pending'"
         class="pin"
         :style="{
           top: `${getLabelPositionY(pin)}%`,

@@ -5,6 +5,7 @@ import type { Coordinate } from '~/components/MenuPinMovement.vue';
 import { usePinStore } from '~/types/store/PinStore';
 import { DEFAULT_PIN_COLOR, DEFAULT_PIN_SIZE, type Pin } from '~/types/Label';
 import { computed, ref, watch } from 'vue';
+import {useUsersStore} from "~/types/store/UsersStore";
 
 const props = defineProps<{
   pin: Pin | null;
@@ -17,14 +18,15 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
+const usersStore = useUsersStore();
 const pinStore = usePinStore();
 
 const name = ref<string>('');
 const size = ref<number>(DEFAULT_PIN_SIZE);
 const color = ref<string>(DEFAULT_PIN_COLOR);
 
-const isPinValidated = computed(() => props.pin && !props.pin.shouldBeValidated);
-const canValidatePin = computed(() => props.pin && !pinStore.isValidatedByClient(props.pin));
+const isPinValidated = computed(() => props.pin && props.pin.status === 'validated');
+const canValidatePin = computed(() => props.pin && props.pin.status === 'pending' && !pinStore.isValidatedByClient(props.pin));
 
 const createOrUpdatePin = () => {
   if (props.pin === null) {
@@ -43,7 +45,8 @@ const createPin = () => {
     size: size.value,
     positionX: props.targetCoordinate.x,
     positionY: props.targetCoordinate.y,
-    shouldBeValidated: true,
+    status: 'pending',
+    validatedBy: [],
   });
 };
 
@@ -113,8 +116,9 @@ watch(
       <button class="action-btn action-validation-btn parkinsans-title" type="button" @click="validatePin">Validate</button>
       <button class="action-btn action-validation-btn parkinsans-title" type="button" @click="deletePin">Deny</button>
     </div>
-    <div v-else>
-      <p class="parkinsans-title text-tall">Awaiting approval</p>
+    <div v-else class="parkinsans-title">
+      <p class="text-medium">Number of validation {{ pin.validatedBy.length ?? 0 }} / {{ usersStore.minimalNbOfValidations }}</p>
+      <p class="text-tall">Awaiting approval</p>
     </div>
   </div>
   <div class="target-selector"></div>
@@ -167,7 +171,10 @@ form {
 }
 
 .text-tall {
-  text-align: center;
+  font-size: 30px;
+}
+
+.text-tall {
   font-size: 40px;
 }
 
