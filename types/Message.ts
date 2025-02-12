@@ -4,7 +4,7 @@ export type ActionsTypes = "addPin" | "deletePin" | "updatePin"
 
 interface Message {
   senderId: string;
-  type: "initialization" | "addPin" | "deletePin" | "updatePin" | "usersChange";
+  type: "initialization" | "addPin" | "deletePin" | "updatePin" | "usersChange" | "chat";
 }
 
 export interface ActionMessage extends Message {
@@ -21,4 +21,9 @@ export interface InitializationMessage extends Message {
 export interface UsersChangeMessage extends Message {
   nbOfUsers: number;
   minimalNbOfValidations: number;
+}
+
+export interface ChatMessage extends Message {
+  pinId: string;
+  content: string;
 }

@@ -24,6 +24,7 @@ const zoomStore = useZoomStore();
 
 const flyingMenu = useTemplateRef('flying-menu');
 const targetCoordinate = ref<Coordinate | null>(null);
+const isChatOpen = ref<boolean>(false);
 const existingPin = ref<Pin | null>(null);
 
 const moveMenu = (event: MouseEvent) => {
@@ -86,6 +87,10 @@ const deleteExistingPin = () => {
   }
 }
 
+const handleChat = () => {
+  isChatOpen.value = !isChatOpen.value;
+}
+
 watch(() => zoomStore.zoomLevel, () => emits('close'));
 
 </script>
@@ -102,7 +107,13 @@ watch(() => zoomStore.zoomLevel, () => emits('close'));
         <Icon name="hugeicons:cursor-move-02" size="20px"/>
       </button>
       <div>
-        <button type="button" v-if="existingPin && !existingPin.shouldBeValidated" @click="deleteExistingPin">
+        <button type="button" v-if="existingPin && !isChatOpen" @click="handleChat">
+          <Icon name="hugeicons:message-02" size="20px"/>
+        </button>
+        <button type="button" v-if="existingPin && isChatOpen" @click="handleChat">
+          <Icon name="hugeicons:left-to-right-list-number" size="20px"/>
+        </button>
+        <button type="button" v-if="existingPin && existingPin.status !== 'pending'" @click="deleteExistingPin">
           <Icon name="hugeicons:delete-01" size="20px"/>
         </button>
         <button type="button" @click="() => emits('close')">
@@ -115,7 +126,7 @@ watch(() => zoomStore.zoomLevel, () => emits('close'));
         :pin="existingPin"
         :panzoom-instance="panzoomInstance"
         :target-coordinate="targetCoordinate ?? { x: 0, y: 0 }"
-        @calculate-target-coordinate="calculateTargetCoordinate"
+        :is-chat-open="isChatOpen"
         @close="emits('close')"
     />
   </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref} from "vue";
 import {usePinStore} from "~/types/store/PinStore";
-import type {ActionMessage, InitializationMessage, UsersChangeMessage,} from "~/types/Message";
+import type {ActionMessage, ChatMessage, InitializationMessage, UsersChangeMessage,} from "~/types/Message";
 import {useUsersStore} from "~/types/store/UsersStore";
 
 const pinStore = usePinStore();
@@ -17,7 +17,7 @@ onMounted(() => {
   };
 
   socket.value.onmessage = (event) => {
-    const message: ActionMessage | InitializationMessage | UsersChangeMessage = JSON.parse(event.data);
+    const message: ActionMessage | InitializationMessage | UsersChangeMessage | ChatMessage = JSON.parse(event.data);
     switch (message.type) {
       case "initialization":
         handleInitializationMessage(message as InitializationMessage);
@@ -34,6 +34,9 @@ onMounted(() => {
         break;
       case "updatePin":
         handleUpdatePinMessage(message as ActionMessage);
+        break;
+      case "chat" :
+        handleChatMessage(message as ChatMessage);
         break;
       default:
     }
@@ -76,6 +79,10 @@ const handleAddPinMessage = (message: ActionMessage) => {
 const handleUpdatePinMessage = (message: ActionMessage) => {
   pinStore.updatePin(message.pin, false);
 };
+
+const handleChatMessage = (message: ChatMessage) => {
+  pinStore.addMessageToPin(message.pinId, message.content);
+}
 
 onUnmounted(() => {
   if (socket.value) {

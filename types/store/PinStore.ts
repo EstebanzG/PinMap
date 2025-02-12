@@ -66,6 +66,19 @@ export const usePinStore = defineStore('pinStore', () => {
     return newCluster;
   };
 
+  const addMessageToPin = (pinId: string, content: string) => {
+    const pin = pins.value.find(pin => pin.id === pinId);
+    if (pin) {
+      pin.messages.push({
+        senderId: clientId ?? "",
+        type: "chat",
+        pinId: pin.id,
+        content: content,
+      });
+      updatePin(pin);
+    }
+  }
+
   const addPin = (pin: Pin, shouldSendMessage = true) => {
     const isPinCreateByClient = shouldSendMessage
     if (clientId && isPinCreateByClient){
@@ -190,6 +203,7 @@ export const usePinStore = defineStore('pinStore', () => {
     pinsToDisplay,
     clusterToDisplay,
     validatePin,
+    addMessageToPin,
     initializedSocket,
     isValidatedByClient,
     addPin,

@@ -1,3 +1,5 @@
+import type {ChatMessage} from "~/types/Message";
+
 export interface Label {
   id: string,
   positionX: number,
@@ -9,6 +11,7 @@ export interface Pin extends Label {
   color?: string | null,
   name?: string | null,
   status: "pending" | "validated"
+  messages: ChatMessage[],
   validatedBy: string[]
 }
 
