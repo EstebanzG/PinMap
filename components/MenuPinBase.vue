@@ -4,36 +4,35 @@ import {type PanzoomObject} from '@panzoom/panzoom';
 import type {Coordinate} from '~/components/MenuPinMovement.vue';
 import {usePinStore} from '~/types/store/PinStore';
 import {DEFAULT_PIN_COLOR, DEFAULT_PIN_SIZE, type Pin} from '~/types/Label';
-import {computed, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import {useUsersStore} from "~/types/store/UsersStore";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
 const props = defineProps<{
-  pin: Pin | null;
   targetCoordinate: Coordinate;
   panzoomInstance: PanzoomObject | null;
 }>();
 
-defineEmits<{
-  (e: 'close'): void;
-}>();
-
 const usersStore = useUsersStore();
 const pinStore = usePinStore();
+const selectedPinStore = useSelectedPinStore();
+
+const pin = ref<Pin | null>(selectedPinStore.selectedPin);
 
 const name = ref<string>('');
 const size = ref<number>(DEFAULT_PIN_SIZE);
 const color = ref<string>(DEFAULT_PIN_COLOR);
 
-const isPinValidated = computed(() => props.pin && props.pin.status === 'validated');
-const canValidatePin = computed(() => props.pin && props.pin.status === 'pending' && !pinStore.isValidatedByClient(props.pin));
+const isPinValidated = computed(() => pin.value && pin.value.status === 'validated');
+const canValidatePin = computed(() => pin.value && pin.value.status === 'pending' && !pinStore.isValidatedByClient(pin.value));
 
 const createOrUpdatePin = () => {
-  if (props.pin === null) {
+  if (pin.value === null) {
     createPin();
+    resetInfos();
   } else {
     updatePin();
   }
-  resetInfos();
 };
 
 const createPin = () => {
@@ -51,9 +50,9 @@ const createPin = () => {
 };
 
 const updatePin = () => {
-  if (props.pin) {
+  if (pin.value) {
     pinStore.updatePin({
-      ...props.pin,
+      ...pin.value,
       name: name.value,
       size: size.value,
       color: color.value,
@@ -68,29 +67,35 @@ const resetInfos = () => {
 };
 
 const validatePin = () => {
-  if (props.pin) {
-    pinStore.validatePin(props.pin);
+  if (pin.value) {
+    pinStore.validatePin(pin.value);
   }
 };
 
 const deletePin = () => {
-  if (props.pin) {
-    pinStore.deletePin(props.pin);
+  if (pin.value) {
+    pinStore.deletePin(pin.value);
   }
 };
 
-watch(
-    () => props.pin,
-    (pin: Pin | null) => {
-      if (pin) {
-        name.value = pin.name ?? '';
-        size.value = pin.size;
-        color.value = pin.color ?? DEFAULT_PIN_COLOR;
-      } else {
-        resetInfos();
-      }
-    }
-);
+const loadPinData = (pin: Pin | null) => {
+  if (pin) {
+    name.value = pin.name ?? '';
+    size.value = pin.size;
+    color.value = pin.color ?? DEFAULT_PIN_COLOR;
+  } else {
+    resetInfos();
+  }
+};
+
+onMounted(() => {
+  loadPinData(pin.value);
+});
+
+watch(() => selectedPinStore.selectedPin, (newPin) => {
+  pin.value = newPin;
+  loadPinData(newPin);
+});
 </script>
 
 <template>
@@ -204,23 +209,6 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 input[type="color"]::-webkit-color-swatch {
   border: none;
   border-radius: 20px;
-}
-
-input[type="text"] {
-  height: 40px;
-  outline: none;
-  padding: 0 20px;
-  background: transparent;
-  border: 1px solid white;
-  border-radius: 20px;
-  color: white;
-  transition: all 0.2s ease-in-out;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  border-color: white;
-  box-shadow: 0 0 0 1px white;
 }
 
 input[type="number"] {

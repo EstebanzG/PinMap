@@ -2,8 +2,8 @@
 
 import type {PanzoomObject} from "@panzoom/panzoom";
 import {usePinStore} from "~/types/store/PinStore";
-import type {Pin} from "~/types/Label";
 import {useZoomStore} from "~/types/store/ZoomStore";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
 export interface Coordinate {
   x: number;
@@ -21,21 +21,21 @@ const emits = defineEmits<{
 
 const pinStore = usePinStore();
 const zoomStore = useZoomStore();
+const selectedPinStore = useSelectedPinStore();
 
 const flyingMenu = useTemplateRef('flying-menu');
 const targetCoordinate = ref<Coordinate | null>(null);
 const isChatOpen = ref<boolean>(false);
-const existingPin = ref<Pin | null>(null);
 
 const moveMenu = (event: MouseEvent) => {
   if (flyingMenu.value) {
     flyingMenu.value.style.left = `${event.clientX}px`;
     flyingMenu.value.style.top = `${event.clientY}px`;
     calculateTargetCoordinate();
-    existingPin.value = pinStore.getPinAtCoordinates(
+    selectedPinStore.setSelectedPin(pinStore.getPinAtCoordinates(
         targetCoordinate.value?.x ?? 0,
         targetCoordinate.value?.y ?? 0,
-    );
+    ));
   }
 };
 
@@ -81,9 +81,9 @@ onMounted(() => {
 });
 
 const deleteExistingPin = () => {
-  if (existingPin.value) {
-    pinStore.deletePin(existingPin.value);
-    existingPin.value = null;
+  if (selectedPinStore.selectedPin) {
+    pinStore.deletePin(selectedPinStore.selectedPin);
+    selectedPinStore.selectedPin = null;
   }
 }
 
@@ -107,13 +107,14 @@ watch(() => zoomStore.zoomLevel, () => emits('close'));
         <Icon name="hugeicons:cursor-move-02" size="20px"/>
       </button>
       <div>
-        <button type="button" v-if="existingPin && !isChatOpen" @click="handleChat">
+        <button type="button" v-if="selectedPinStore.selectedPin && !isChatOpen" @click="handleChat">
           <Icon name="hugeicons:message-02" size="20px"/>
         </button>
-        <button type="button" v-if="existingPin && isChatOpen" @click="handleChat">
+        <button type="button" v-if="selectedPinStore.selectedPin && isChatOpen" @click="handleChat">
           <Icon name="hugeicons:left-to-right-list-number" size="20px"/>
         </button>
-        <button type="button" v-if="existingPin && existingPin.status !== 'pending'" @click="deleteExistingPin">
+        <button type="button" v-if="selectedPinStore.selectedPin && selectedPinStore.selectedPin.status !== 'pending'"
+                @click="deleteExistingPin">
           <Icon name="hugeicons:delete-01" size="20px"/>
         </button>
         <button type="button" @click="() => emits('close')">
@@ -123,11 +124,9 @@ watch(() => zoomStore.zoomLevel, () => emits('close'));
     </div>
     <MenuPin
         ref="menu-pin"
-        :pin="existingPin"
         :panzoom-instance="panzoomInstance"
         :target-coordinate="targetCoordinate ?? { x: 0, y: 0 }"
         :is-chat-open="isChatOpen"
-        @close="emits('close')"
     />
   </div>
 </template>

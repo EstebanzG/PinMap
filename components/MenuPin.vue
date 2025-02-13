@@ -1,34 +1,28 @@
 <script setup lang="ts">
 import {type PanzoomObject} from '@panzoom/panzoom';
 import type {Coordinate} from '~/components/MenuPinMovement.vue';
-import {type Pin} from '~/types/Label';
 import MenuPinBase from "~/components/MenuPinBase.vue";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
 defineProps<{
-  pin: Pin | null;
   targetCoordinate: Coordinate;
   panzoomInstance: PanzoomObject | null;
   isChatOpen: boolean;
 }>();
 
-defineEmits<{
-  (e: 'close'): void;
-}>();
+const selectedPinStore = useSelectedPinStore();
 
 </script>
 
 <template>
   <div class="open" ref="menu">
     <MenuPinBase
-        v-if="!isChatOpen || !pin"
-        :pin="pin"
+        v-if="!isChatOpen || !selectedPinStore.selectedPin"
         :target-coordinate="targetCoordinate"
         :panzoom-instance="panzoomInstance"
-        @close="$emit('close')"
     />
     <MenuChatBase
-      v-else-if="pin"
-      :pin="pin"
+        v-else-if="selectedPinStore.selectedPin"
     />
   </div>
   <div class="target-selector"></div>

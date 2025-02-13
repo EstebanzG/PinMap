@@ -4,6 +4,7 @@ import {v4 as uuidv4} from "uuid";
 import type {Cluster, Pin} from "../Label";
 import type {ActionMessage, ActionsTypes} from "~/types/Message";
 import {useZoomStore} from "~/types/store/ZoomStore";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
 export const usePinStore = defineStore('pinStore', () => {
   const pins = ref<Pin[]>([]);
@@ -11,6 +12,8 @@ export const usePinStore = defineStore('pinStore', () => {
   const clusterToDisplay = ref<Cluster[]>([]);
   let socket: WebSocket | null = null;
   let clientId: string | null = null;
+
+  const selectedPinStore = useSelectedPinStore();
 
   const initializedSocket = (ws: WebSocket, id: string) => {
     socket = ws;
@@ -23,6 +26,10 @@ export const usePinStore = defineStore('pinStore', () => {
     }
 
     return pin.validatedBy.includes(clientId);
+  }
+
+  const getPinById = (id: string | null): Pin |  null => {
+    return pins.value.find(pin => pin.id === id) ?? null;
   }
 
   const sendMessage = (type: ActionsTypes, pin: Pin) => {
@@ -70,9 +77,7 @@ export const usePinStore = defineStore('pinStore', () => {
     const pin = pins.value.find(pin => pin.id === pinId);
     if (pin) {
       pin.messages.push({
-        senderId: clientId ?? "",
-        type: "chat",
-        pinId: pin.id,
+        sender: clientId ?? "",
         content: content,
       });
       updatePin(pin);
@@ -112,6 +117,10 @@ export const usePinStore = defineStore('pinStore', () => {
       pins.value[index] = updatedPin;
       if (shouldSendMessage) {
         sendMessage("updatePin", updatedPin);
+      } else {
+        if (selectedPinStore.selectedPin?.id === updatedPin.id) {
+          selectedPinStore.setSelectedPin(updatedPin);
+        }
       }
       refreshView();
     }
@@ -198,10 +207,21 @@ export const usePinStore = defineStore('pinStore', () => {
     });
   };
 
+  const getMessagesForPin = (pinId: string) => {
+    return pins.value.find(pin => pin.id === pinId)?.messages ?? [];
+  }
+
+  const isMessageSenderIsMe = (sender: string) => {
+    return sender === clientId;
+  }
+
   return {
     pins,
     pinsToDisplay,
     clusterToDisplay,
+    isMessageSenderIsMe,
+    getMessagesForPin,
+    getPinById,
     validatePin,
     addMessageToPin,
     initializedSocket,

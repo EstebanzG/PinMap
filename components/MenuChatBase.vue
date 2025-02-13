@@ -1,38 +1,63 @@
 <script setup lang="ts">
-import type { Pin } from "~/types/Label";
-import { ref, watch, nextTick } from 'vue';
-import { usePinStore } from "~/types/store/PinStore";
+import {ref, watch} from 'vue';
+import {usePinStore} from "~/types/store/PinStore";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
-const props = defineProps<{
-  pin: Pin
-}>();
+const props = defineProps<{}>();
 
 const pinStore = usePinStore();
-const messages = ref(props.pin.messages);
-const newMessage = ref('');
+const selectedPinStore = useSelectedPinStore();
+
+const newMessage = ref<string>('');
 const chatMessagesRef = ref<HTMLElement | null>(null);
 
 const sendMessage = () => {
-  if (newMessage.value.trim() !== '') {
-    pinStore.addMessageToPin(props.pin.id, newMessage.value);
+  if (newMessage.value.trim() !== '' && selectedPinStore.selectedPin) {
+    pinStore.addMessageToPin(selectedPinStore.selectedPin.id, newMessage.value);
     newMessage.value = '';
   }
 };
 
-watch(messages, () => {
-  nextTick(() => {
-    if (chatMessagesRef.value) {
-      chatMessagesRef.value.scrollTop = chatMessagesRef.value.scrollHeight;
-    }
-  });
+const messages = computed(() => {
+  if (selectedPinStore.selectedPin) {
+    return pinStore.getMessagesForPin(selectedPinStore.selectedPin.id);
+  }
+
+  return [];
 });
+
+const scrollToBottom = (behavior: 'smooth' | 'instant') => {
+  if (chatMessagesRef.value) {
+    chatMessagesRef.value.scrollTo({
+      top: chatMessagesRef.value.scrollHeight,
+      behavior: behavior,
+    });
+  }
+};
+
+watch(messages, async () => {
+  await nextTick();
+  scrollToBottom('smooth');
+}, {deep: true});
+
+onMounted(() => {
+  scrollToBottom('instant');
+});
+
 </script>
 
 <template>
   <div class="chat-container">
     <div class="chat-messages" ref="chatMessagesRef">
-      <div v-for="(message, index) in messages" :key="index" class="chat-message">
-        <p class="message-content parkinsans-text">{{ message.content }}</p>
+      <div v-for="(message, index) in messages" :key="index"
+           :class="['chat-message parkinsans-text-light', pinStore.isMessageSenderIsMe(message.sender) ? 'self-message' : 'other-message']">
+        <div class="message-bubble">
+          <p class="message-content">{{ message.content }}</p>
+          <hr v-if="!pinStore.isMessageSenderIsMe(message.sender)"/>
+          <p v-if="!pinStore.isMessageSenderIsMe(message.sender)" class="message-sender">{{
+              message.sender
+            }}</p>
+        </div>
       </div>
     </div>
     <div class="chat-input">
@@ -41,11 +66,13 @@ watch(messages, () => {
           v-model="newMessage"
           placeholder="Type a message..."
           @keyup.enter="sendMessage"
+          class="input-box"
       />
-      <button @click="sendMessage">Send</button>
+      <button class="action-btn" @click="sendMessage">Send</button>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .chat-container {
@@ -53,63 +80,86 @@ watch(messages, () => {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: #1a1a1a;
   color: white;
-  padding: 20px;
-  border-radius: 10px;
+  user-select: text;
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 20px;
-  padding-right: 10px;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .chat-message {
+  display: flex;
   margin-bottom: 10px;
-  border-bottom: gray 1px solid;
+}
+
+.message-bubble {
+  width: 60%;
+  border-radius: 12px;
+  border: white 1px solid;
+  color: white;
+}
+
+.message-bubble hr {
+  border-color: gray;
+}
+
+.self-message {
+  justify-content: flex-end;
+}
+
+.other-message {
+  justify-content: flex-start;
+}
+
+.self-message .message-bubble {
+  color: white;
 }
 
 .message-content {
-  font-size: 16px;
+  font-size: 14px;
+  overflow-wrap: break-word;
+  padding: 10px;
+}
+
+.message-sender {
+  font-size: 12px;
+  margin-top: 5px;
+  padding: 5px 10px 5px 10px;
+  font-style: italic;
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;;
 }
 
 .chat-input {
+  height: 20%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
 .chat-input input {
-  flex: 1;
-  height: 40px;
-  padding: 0 20px;
-  background: transparent;
-  border: 1px solid white;
-  border-radius: 20px;
-  color: white;
-  margin-right: 10px;
-  transition: all 0.2s ease-in-out;
-}
-
-.chat-input input:focus {
-  outline: none;
-  border-color: white;
-  box-shadow: 0 0 0 1px white;
+  width: 50%;
 }
 
 .chat-input button {
-  height: 40px;
-  padding: 0 20px;
-  background-color: #4CAF50;
-  border: none;
-  border-radius: 20px;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  width: 30%;
 }
 
-.chat-input button:hover {
-  background-color: #45a049;
+.chat-messages::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: white;
+  border-radius: 5px;
 }
 </style>

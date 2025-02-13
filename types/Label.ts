@@ -1,5 +1,3 @@
-import type {ChatMessage} from "~/types/Message";
-
 export interface Label {
   id: string,
   positionX: number,
@@ -11,13 +9,18 @@ export interface Pin extends Label {
   color?: string | null,
   name?: string | null,
   status: "pending" | "validated"
-  messages: ChatMessage[],
+  messages: Message[],
   validatedBy: string[]
 }
 
 export interface Cluster extends Label {
   numberOfPins: number,
   names: string[],
+}
+
+export interface Message {
+  sender: string;
+  content: string;
 }
 
 export const DEFAULT_PIN_SIZE = 40;

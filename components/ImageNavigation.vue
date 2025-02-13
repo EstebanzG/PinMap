@@ -5,6 +5,7 @@ import MenuEditor from "~/components/MenuEditor.vue";
 import MenuPinMovement, {type Coordinate} from "~/components/MenuPinMovement.vue";
 import {usePinStore} from "~/types/store/PinStore";
 import {useZoomStore} from "~/types/store/ZoomStore";
+import {useSelectedPinStore} from "~/types/store/SelectedPinStore";
 
 defineProps<{
   imageSrc: string;
@@ -20,6 +21,7 @@ const emits = defineEmits<{
 
 const pinStore = usePinStore();
 const zoomStore = useZoomStore();
+const selectedPinStore = useSelectedPinStore();
 
 const imageWrapper = useTemplateRef('image-wrapper');
 const imageEdit = useTemplateRef('edit-image');
@@ -53,6 +55,7 @@ const handlePrint = () => {
 
 const closeMenuPin = () => {
   menuOpen.value = null;
+  selectedPinStore.setSelectedPin(null);
   handleActivateImageMovement(isNavigationDisabled.value);
 };
 
@@ -71,6 +74,7 @@ const reset = () => {
 };
 
 onMounted(() => {
+  pinStore.refreshView();
   if (imageWrapper.value) {
     imagePanzoomInstance = panzoom(imageWrapper.value, defaultPanZoomOptions);
 
@@ -78,10 +82,10 @@ onMounted(() => {
       event.preventDefault();
       zoomStore.zoomLevel = imagePanzoomInstance?.zoomWithWheel(event, {step: 0.1}).scale ?? 1;
     };
-    document.addEventListener("wheel", wheelHandler, {passive: false});
+    imageWrapper.value.addEventListener("wheel", wheelHandler, {passive: false});
 
     onUnmounted(() => {
-      document.removeEventListener("wheel", wheelHandler);
+      imageWrapper.value?.removeEventListener("wheel", wheelHandler);
     });
   }
 });
