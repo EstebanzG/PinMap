@@ -15,7 +15,8 @@
     "nuxt": "^3.14.1592",
     "uuid": "^11.0.3",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@nuxt/icon": "^1.10.3",
