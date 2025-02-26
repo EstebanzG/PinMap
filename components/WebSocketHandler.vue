@@ -10,7 +10,7 @@ const clientId = ref<string>('');
 const socket = ref<WebSocket | null>(null);
 
 onMounted(() => {
-  socket.value = new WebSocket("ws://pinmapsocket-production.up.railway.app");
+  socket.value = new WebSocket("wss://pinmapsocket-production.up.railway.app");
 
   socket.value.onopen = () => {
     console.log("WebSocket connecté");
